@@ -18,13 +18,13 @@ namespace Developers.MidiXml.Elements
         public TimeModification(XElement SourceElm)
         {
             //ソース読み取り
-            XElement? ActualNotesNode = SourceElm!.Element("actual-notes");
-            XElement? NormalNotesNode = SourceElm.Element("normal-notes");
+            XElement? ActualNotesElm = SourceElm!.Element("actual-notes");
+            XElement? NormalNotesElm = SourceElm.Element("normal-notes");
 
             //<actual-notes>>
-            if (ActualNotesNode != null)
+            if (ActualNotesElm != null)
             {
-                if (!int.TryParse(ActualNotesNode.Value, out int RawActualNotesInt))
+                if (!int.TryParse(ActualNotesElm.Value, out int RawActualNotesInt))
                 {
                     throw new ArgumentException("<time-modification>: <actual-notes>: Invalid value.");
                 }
@@ -35,9 +35,9 @@ namespace Developers.MidiXml.Elements
                 throw new ArgumentException("<time-modification><actual-notes>Not found.");
             }
             //<normal-notes>>
-            if (NormalNotesNode != null)
+            if (NormalNotesElm != null)
             {
-                if (!int.TryParse(NormalNotesNode.Value, out int RawNormalNotesInt))
+                if (!int.TryParse(NormalNotesElm.Value, out int RawNormalNotesInt))
                 {
                     throw new ArgumentException("<time-modification>: <normal-notes>: Invalid value.");
                 }
