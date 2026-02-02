@@ -11,28 +11,28 @@ namespace Developers.MidiXml.Elements
 
         private KeyTranspose? Key { get; set; } = null;
 
+        ///// <summary>
+        ///// 指定されたステップ
+        ///// </summary>
+        //public MidiDefs.Step RawStep { get; set; } = MidiDefs.Step.C;
+        ///// <summary>
+        ///// 指定されたオクターブ
+        ///// </summary>
+        //public int RawOctave { get; set; } = MidiDefs.OCTAVE_CENTER;
+        ///// <summary>
+        ///// 指定された半音操作
+        ///// </summary>
+        //public int RawAlter { get; set; } = MidiDefs.ALTER_NATURAL;
         /// <summary>
-        /// 指定されたステップ
-        /// </summary>
-        public MidiDefs.Step RawStep { get; set; } = MidiDefs.Step.C;
-        /// <summary>
-        /// 指定されたオクターブ
-        /// </summary>
-        public int RawOctave { get; set; } = MidiDefs.OCTAVE_CENTER;
-        /// <summary>
-        /// 指定された半音操作
-        /// </summary>
-        public int RawAlter { get; set; } = MidiDefs.ALTER_NATURAL;
-        /// <summary>
-        /// ステップ(実音)
+        /// ステップ(オリジナル)
         /// </summary>
         public MidiDefs.Step Step { get; private set; } = MidiDefs.Step.C;
         /// <summary>
-        /// オクターブ(実音)
+        /// オクターブ(オリジナル)
         /// </summary>
         public int Octave { get; private set; } = MidiDefs.OCTAVE_CENTER;
         /// <summary>
-        /// 半音操作(実音)
+        /// 半音操作(オリジナル)
         /// </summary>
         public int Alter { get; private set; } = MidiDefs.ALTER_NATURAL;
         /// <summary>
@@ -45,7 +45,20 @@ namespace Developers.MidiXml.Elements
                 return new PitchClass(this.Step, this.Alter);
             }
         }
-
+        /// <summary>
+        /// Stepに対して冗長なAlterを短縮したPitch
+        /// </summary>
+        public Pitch SimplePitch
+        {
+            get
+            {
+                MidiDefs.Step TempStep = this.Step;
+                int TempOctave = this.Octave;
+                int TempAlter = this.Alter;
+                PitchUtil.AdjustToSimplePitch(ref TempStep, ref TempOctave, ref TempAlter);
+                return new Pitch(TempStep, TempOctave, TempAlter);
+            }
+        }
         #endregion
 
         #region "constructors"
@@ -74,12 +87,10 @@ namespace Developers.MidiXml.Elements
         /// <param name="Alter"></param>
         public Pitch(MidiDefs.Step Step, int octave, int Alter, KeyTranspose? Key)
         {
-            this.RawStep = Step;
-            this.RawAlter = Alter;
-            this.RawOctave = octave;
+            this.Step = Step;
+            this.Alter = Alter;
+            this.Octave = octave;
             this.Key = Key;
-            //AlterをStepに変換して実音を求める
-            PitchCalculation();
         }
 
         /// <summary>
@@ -117,8 +128,8 @@ namespace Developers.MidiXml.Elements
                 throw new ArgumentException("<pitch>: <octave>: Invalid value.");
             }
             //必須データのセット
-            this.RawStep = MidiDefs.StepMembers.FirstOrDefault(x => x.Key.Equals(RawStep, StringComparison.CurrentCultureIgnoreCase)).Value;
-            this.RawOctave = RawOctaveInt;
+            this.Step = MidiDefs.StepMembers.FirstOrDefault(x => x.Key.Equals(RawStep, StringComparison.CurrentCultureIgnoreCase)).Value;
+            this.Octave = RawOctaveInt;
             //任意データの処理
             if (AlterNode != null)
             {
@@ -133,10 +144,8 @@ namespace Developers.MidiXml.Elements
                     throw new ArgumentException("<pitch>: <alter>: Unsupported value.");
                 }
                 //任意データのセット
-                this.RawAlter = RawAlterInt;
+                this.Alter = RawAlterInt;
             }
-            //AlterをStepに変換して実音を求める
-            PitchCalculation();
         }
 
         #endregion
@@ -207,7 +216,7 @@ namespace Developers.MidiXml.Elements
         /// <returns></returns>
         public Pitch Clone()
         {
-            return new Pitch(this.RawStep, this.RawOctave, this.RawAlter, this.Key);
+            return new Pitch(this.Step, this.Octave, this.Alter, this.Key);
         }
 
         /// <summary>
@@ -234,9 +243,7 @@ namespace Developers.MidiXml.Elements
         /// <param name="Alter"></param>
         public void AlterOctave(int Alter)
         {
-            this.RawOctave += Alter;
-            //AlterをStepに変換して実音を求める
-            PitchCalculation();
+            this.Octave += Alter;
         }
 
         /// <summary>
@@ -261,23 +268,6 @@ namespace Developers.MidiXml.Elements
 
         #endregion
 
-        /// <summary>
-        ///RawStep, RawAlter, RawOctaveを再計算してStep, Alter, Octaveを設定する
-        /// </summary>
-        private void PitchCalculation()
-        {
-            //AlterをStepに変換して実音を求める
-            MidiDefs.Step TempStep = this.RawStep;
-            int TempOctave = this.RawOctave;
-            int TempAlter = this.RawAlter;
-            PitchUtil.AdjustToRealPitch(ref TempStep, ref TempOctave, ref TempAlter);
-            this.Step = TempStep;
-            this.Octave = TempOctave;
-            this.Alter = TempAlter;
-        }
-
-
-
         #region "debug methods"
 
         /// <summary>
@@ -289,9 +279,6 @@ namespace Developers.MidiXml.Elements
             string Dump = string.Empty;
 
             Dump += "<pitch>";
-            Dump += "<step>" + RawStep.ToString();
-            Dump += "<alter>" + RawAlter.ToString();
-            Dump += "<octave>" + RawOctave.ToString();
             Dump += "[real}";
             Dump += "<step>" + Step.ToString();
             Dump += "<alter>" + Alter.ToString();

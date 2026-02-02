@@ -4,22 +4,36 @@
     {
         #region "properties"
 
+        ///// <summary>
+        ///// 指定されたステップ
+        ///// </summary>
+        //public MidiDefs.Step RawStep { get; init; } = MidiDefs.Step.C;
+        ///// <summary>
+        ///// 指定された半音操作
+        ///// </summary>
+        //public int RawAlter { get; init; } = MidiDefs.ALTER_NATURAL;
         /// <summary>
-        /// 指定されたステップ
-        /// </summary>
-        public MidiDefs.Step RawStep { get; init; } = MidiDefs.Step.C;
-        /// <summary>
-        /// 指定された半音操作
-        /// </summary>
-        public int RawAlter { get; init; } = MidiDefs.ALTER_NATURAL;
-        /// <summary>
-        /// ステップ(実音)
+        /// ステップ(オリジナル)
         /// </summary>
         public MidiDefs.Step Step { get; init; } = MidiDefs.Step.C;
         /// <summary>
-        /// 半音操作(実音)
+        /// 半音操作(オリジナル)
         /// </summary>
         public int Alter { get; init; } = MidiDefs.ALTER_NATURAL;
+        /// <summary>
+        /// Stepに対して冗長なAlterを短縮したPitchClass
+        /// </summary>
+        public PitchClass SimplePtichClass
+        {
+            get
+            {
+                MidiDefs.Step TempStep = this.Step;
+                int TempOctave = MidiDefs.OCTAVE_CENTER;
+                int TempAlter = this.Alter;
+                PitchUtil.AdjustToSimplePitch(ref TempStep, ref TempOctave, ref TempAlter);
+                return new PitchClass(TempStep, TempAlter);
+            }
+        }
 
         #endregion
 
@@ -40,15 +54,8 @@
         /// <param name="Alter"></param>
         public PitchClass(MidiDefs.Step Step, int Alter)
         {
-            this.RawStep = Step;
-            this.RawAlter = Alter;
-            //Alter計算
-            MidiDefs.Step TempStep = this.RawStep;
-            int TempOctave = 4;
-            int TempAlter = this.RawAlter;
-            PitchUtil.AdjustToRealPitch(ref TempStep, ref TempOctave, ref TempAlter);
-            this.Step = TempStep;
-            this.Alter = TempAlter;
+            this.Step = Step;
+            this.Alter = Alter;
         }
 
         #endregion
@@ -61,7 +68,7 @@
         /// <returns></returns>
         public PitchClass Clone()
         {
-            return new PitchClass(this.RawStep, this.RawAlter);
+            return new PitchClass(this.Step, this.Alter);
         }
 
         /// <summary>
@@ -104,8 +111,6 @@
             Dump += "[PitchClass]";
             Dump += "Step=" + Step.ToString();
             Dump += "Alter=" + Alter.ToString();
-            Dump += "RawStep=" + RawStep.ToString();
-            Dump += "RawAlter=" + RawAlter.ToString();
             return Dump;
         }
 

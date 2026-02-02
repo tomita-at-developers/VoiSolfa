@@ -24,7 +24,6 @@ namespace Developers.MidiXml.Elements
         /// このインスタンスに対応するXElement
         /// </summary>
         public XElement SourceElm { get; init; }
-        private KeyTranspose? Key { get; init; } = null;
         public string MeasureNumber { get; init; } = string.Empty;
         public Pitch? Pitch { get; set; } = null;
         public bool Rest { get; init; } = false;
@@ -62,8 +61,6 @@ namespace Developers.MidiXml.Elements
 
             //ノード保存
             this.SourceElm = SourceElm;
-            //キー情報の保存
-            this.Key = Key;
             //親ノードのnumber属性(小節番号)を取得
             if (MeasureNumberAtr != null)
             {

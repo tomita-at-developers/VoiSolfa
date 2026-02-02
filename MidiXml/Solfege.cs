@@ -257,7 +257,7 @@ namespace Developers.MidiXml
                 if (Syllables.Count == 2)
                 {
                     //もともとシャープ表現ならシャープ表現
-                    if (Note.Pitch.RawAlter > 0)
+                    if (Note.Pitch.Alter > 0)
                     {
                         if (Enharmonics != SHARP)
                         {
@@ -266,7 +266,7 @@ namespace Developers.MidiXml
                         }
                     }
                     //もともとフラット表現ならフラット表現
-                    if (Note.Pitch.RawAlter < 0)
+                    if (Note.Pitch.Alter < 0)
                     {
                         if (Enharmonics != FLAT)
                         {
@@ -275,7 +275,7 @@ namespace Developers.MidiXml
                         }
                     }
                     //シャープ系キーのナチュラル表現はフラット表現
-                    if (Key.Fifths > 0 && Note.Pitch.RawAlter == 0)
+                    if (Key.Fifths > 0 && Note.Pitch.Alter == 0)
                     {
                         if (Enharmonics != FLAT)
                         {
@@ -284,7 +284,7 @@ namespace Developers.MidiXml
                         }
                     }
                     //フラット系キーのナチュラル表現はシャープ表現
-                    if (Key.Fifths < 0 && Note.Pitch.RawAlter == 0)
+                    if (Key.Fifths < 0 && Note.Pitch.Alter == 0)
                     {
                         if (Enharmonics != SHARP)
                         {

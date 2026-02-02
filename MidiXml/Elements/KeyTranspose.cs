@@ -41,9 +41,15 @@ namespace Developers.MidiXml.Elements
             //<key><fifths>
             if (KeyFifthsElm != null)
             {
+                //数字化チェック
                 if (!int.TryParse(KeyFifthsElm.Value, out int RawKeyFifths))
                 {
                     throw new ArgumentException("<attributes><key>: <fifths>: Invalid value.");
+                }
+                //サポートチェック(シャープ系は<F#>まで、フラット系は<Gb>まで
+                if (RawKeyFifths < -6 || 6 < RawKeyFifths)
+                {
+                    throw new ArgumentException("<attributes><key>: <fifths>: [" + RawKeyFifths.ToString() + "] is unspported.");
                 }
                 this.Fifths = RawKeyFifths;
             }

@@ -183,42 +183,42 @@ namespace VoiSolfa
             Step = MidiDefs.Step.F;
             Octave = 4;
             Alter = -1;
-            PitchUtil.AdjustToRealPitch(ref Step, ref Octave, ref Alter);
+            PitchUtil.AdjustToSimplePitch(ref Step, ref Octave, ref Alter);
             Step = MidiDefs.Step.F;
             Octave = 4;
             Alter = 2;
-            PitchUtil.AdjustToRealPitch(ref Step, ref Octave, ref Alter);
+            PitchUtil.AdjustToSimplePitch(ref Step, ref Octave, ref Alter);
             Step = MidiDefs.Step.E;
             Octave = 4;
             Alter = 1;
-            PitchUtil.AdjustToRealPitch(ref Step, ref Octave, ref Alter);
+            PitchUtil.AdjustToSimplePitch(ref Step, ref Octave, ref Alter);
             Step = MidiDefs.Step.E;
             Octave = 4;
             Alter = 13;
-            PitchUtil.AdjustToRealPitch(ref Step, ref Octave, ref Alter);
+            PitchUtil.AdjustToSimplePitch(ref Step, ref Octave, ref Alter);
             Step = MidiDefs.Step.B;
             Octave = 3;
             Alter = 1;
-            PitchUtil.AdjustToRealPitch(ref Step, ref Octave, ref Alter);
+            PitchUtil.AdjustToSimplePitch(ref Step, ref Octave, ref Alter);
             Step = MidiDefs.Step.C;
             Octave = 4;
             Alter = 0;
-            PitchUtil.AdjustToRealPitch(ref Step, ref Octave, ref Alter);
+            PitchUtil.AdjustToSimplePitch(ref Step, ref Octave, ref Alter);
 
             Step = MidiDefs.Step.C;
             Octave = 4;
             Alter = -1;
-            PitchUtil.AdjustToRealPitch(ref Step, ref Octave, ref Alter);
+            PitchUtil.AdjustToSimplePitch(ref Step, ref Octave, ref Alter);
 
             Step = MidiDefs.Step.D;
             Octave = 4;
             Alter = -1;
-            PitchUtil.AdjustToRealPitch(ref Step, ref Octave, ref Alter);
+            PitchUtil.AdjustToSimplePitch(ref Step, ref Octave, ref Alter);
 
             Step = MidiDefs.Step.D;
             Octave = 4;
             Alter = -3;
-            PitchUtil.AdjustToRealPitch(ref Step, ref Octave, ref Alter);
+            PitchUtil.AdjustToSimplePitch(ref Step, ref Octave, ref Alter);
 
             Debug.Print("");
         }

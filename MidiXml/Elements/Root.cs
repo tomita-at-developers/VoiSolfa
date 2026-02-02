@@ -2,12 +2,22 @@
 
 namespace Developers.MidiXml.Elements
 {
+    /// <summary>
+    /// <harmonyで指定されるコードのルート音(AlterのStep繰り上げは行わない)
+    /// </summary>
     public class Root : MidiElement
     {
-        public MidiDefs.Step RawStep { get; init; } = MidiDefs.Step.C;
-        public int RawAlter { get; init; } = MidiDefs.ALTER_NATURAL;
+        /// <summary>
+        /// ステップ(オリジナル)
+        /// </summary>
         public MidiDefs.Step Step { get; init; } = MidiDefs.Step.C;
+        /// <summary>
+        /// 半音操作(オリジナル)
+        /// </summary>
         public int Alter { get; init; } = MidiDefs.ALTER_NATURAL;
+        /// <summary>
+        /// PitchClassインスタンスで表現されたRoot情報
+        /// </summary>
         public PitchClass PitchClass
         {
             get
@@ -62,13 +72,6 @@ namespace Developers.MidiXml.Elements
                 //任意データのセット
                 this.Alter = RawAlterInt;
             }
-            //Alter計算
-            MidiDefs.Step TempStep = this.RawStep;
-            int TempOctave = 4;
-            int TempAlter = this.RawAlter;
-            PitchUtil.AdjustToRealPitch(ref TempStep, ref TempOctave, ref TempAlter);
-            this.Step = TempStep;
-            this.Alter = TempAlter;
         }
 
         /// <summary>

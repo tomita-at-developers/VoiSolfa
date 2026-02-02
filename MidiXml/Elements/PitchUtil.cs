@@ -5,7 +5,7 @@
         #region "fields"
 
         //クロマチックテーブルのテンプレート(C開始)
-        public static List<List<KeyValuePair<MidiDefs.Step, int>>> CBasedChromaticScale =
+        public static List<List<KeyValuePair<MidiDefs.Step, int>>> CBasedChromaticScale { get; } =
         [
             [
                 new KeyValuePair<MidiDefs.Step, int>(MidiDefs.Step.C, MidiDefs.ALTER_NATURAL),
@@ -51,7 +51,7 @@
         ];
 
         //Stepのクロマチックインデックス
-        public static List<KeyValuePair<MidiDefs.Step, int>> StepIndexes =
+        public static List<KeyValuePair<MidiDefs.Step, int>> StepIndexes { get; } =
         [
             new KeyValuePair<MidiDefs.Step, int>(MidiDefs.Step.C, 0),
             new KeyValuePair<MidiDefs.Step, int>(MidiDefs.Step.D, 2),
@@ -67,12 +67,52 @@
         #region "public methods"
 
         /// <summary>
+        /// Alterによって別のStepで表現できるか判定
+        /// </summary>
+        /// <param name="Pitch"></param>
+        /// <returns></returns>
+        public static bool HasAlternativeStep(Pitch Pitch)
+        {
+            bool RetVal = false;
+
+            MidiDefs.Step TempStep = Pitch.Step;
+            int TempOctave = Pitch.Octave;
+            int TempAlter = Pitch.Alter;
+            AdjustToSimplePitch(ref TempStep, ref TempOctave, ref TempAlter);
+            if (Pitch.Step != TempStep)
+            {
+                RetVal = true;
+            }
+            return RetVal;
+        }
+
+        /// <summary>
+        /// Alterによって別のOctave帯に変化するか判定
+        /// </summary>
+        /// <param name="Pitch"></param>
+        /// <returns></returns>
+        public static bool HasAlternativeOctave(Pitch Pitch)
+        {
+            bool RetVal = false;
+
+            MidiDefs.Step TempStep = Pitch.Step;
+            int TempOctave = Pitch.Octave;
+            int TempAlter = Pitch.Alter;
+            AdjustToSimplePitch(ref TempStep, ref TempOctave, ref TempAlter);
+            if (Pitch.Octave != TempOctave)
+            {
+                RetVal = true;
+            }
+            return RetVal;
+        }
+
+        /// <summary>
         /// 指定されたAlterをStepに繰り上げてAlterを最低限に縮小する
         /// </summary>
         /// <param name="Step"></param>
         /// <param name="Octave"></param>
         /// <param name="Alter"></param>
-        public static void AdjustToRealPitch(ref MidiDefs.Step Step, ref int Octave, ref int Alter)
+        public static void AdjustToSimplePitch(ref MidiDefs.Step Step, ref int Octave, ref int Alter)
         {
             MidiDefs.Step RetStep = MidiDefs.Step.C;
             int RetOctave = 0;
@@ -170,7 +210,7 @@
             int RetAlter = Source.Alter + Alter;
 
             //アジャスト
-            AdjustToRealPitch(ref RetStep, ref RetOctave, ref RetAlter);
+            AdjustToSimplePitch(ref RetStep, ref RetOctave, ref RetAlter);
             //もともとフラット表現だったものがシャープ表現になっている場合
             if (Source.Alter < 0 && RetAlter > 0)
             {
