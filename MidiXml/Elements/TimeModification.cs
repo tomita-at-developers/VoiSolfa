@@ -13,12 +13,15 @@ namespace Developers.MidiXml.Elements
         /// <summary>
         /// コンストラクタ(XDocument版)
         /// </summary>
-        /// <param name="Node"></param>
+        /// <param name="SourceElm"></param>
         /// <exception cref="ArgumentException"></exception>
-        public TimeModification(XElement Node)
+        public TimeModification(XElement SourceElm)
         {
+            //ソース読み取り
+            XElement? ActualNotesNode = SourceElm!.Element("actual-notes");
+            XElement? NormalNotesNode = SourceElm.Element("normal-notes");
+
             //<actual-notes>>
-            XElement? ActualNotesNode = Node!.Element("actual-notes");
             if (ActualNotesNode != null)
             {
                 if (!int.TryParse(ActualNotesNode.Value, out int RawActualNotesInt))
@@ -32,7 +35,6 @@ namespace Developers.MidiXml.Elements
                 throw new ArgumentException("<time-modification><actual-notes>Not found.");
             }
             //<normal-notes>>
-            XElement? NormalNotesNode = Node.Element("normal-notes");
             if (NormalNotesNode != null)
             {
                 if (!int.TryParse(NormalNotesNode.Value, out int RawNormalNotesInt))

@@ -24,35 +24,24 @@ namespace Developers.MidiXml.Elements
         /// <summary>
         /// コンストラクタ(XDoxument版)
         /// </summary>
-        /// <param name="Node"></param>
+        /// <param name="SourceElm"></param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="FormatException"></exception>
-        public KeyTranspose(XElement Node)
+        public KeyTranspose(XElement SourceElm)
         {
-            //参照ノード
-            XElement? KeyFifthsNode = null;
-            XElement? KeyModeNode = null;
-            XElement? TransDiatonicNode = null;
-            XElement? TransChromaticNode = null;
+            //ソース読み取り<key>系
+            XElement? KeyElm = SourceElm.Element("key");
+            XElement? KeyFifthsElm = KeyElm?.Element("fifths");
+            XElement? KeyModeElm = KeyElm?.Element("mode");
+            //ソース読み取り<transpose>系
+            XElement? TransposeElm = SourceElm.Element("transpose");
+            XElement? TransDiatonicElm = TransposeElm?.Element("diatonic");
+            XElement? TransChromaticElm = TransposeElm?.Element("chromatic");
 
-            //<key>
-            XElement? KeyNode = Node.Element("key");
-            if (KeyNode != null)
-            {
-                KeyFifthsNode = KeyNode.Element("fifths");
-                KeyModeNode = KeyNode.Element("mode");
-            }
-            //<transpose>
-            XElement? TransposeNode = Node.Element("transpose");
-            if (TransposeNode != null)
-            {
-                TransDiatonicNode = TransposeNode.Element("diatonic");
-                TransChromaticNode = TransposeNode.Element("chromatic");
-            }
             //<key><fifths>
-            if (KeyFifthsNode != null)
+            if (KeyFifthsElm != null)
             {
-                if (!int.TryParse(KeyFifthsNode.Value, out int RawKeyFifths))
+                if (!int.TryParse(KeyFifthsElm.Value, out int RawKeyFifths))
                 {
                     throw new ArgumentException("<attributes><key>: <fifths>: Invalid value.");
                 }
@@ -63,9 +52,9 @@ namespace Developers.MidiXml.Elements
                 throw new FormatException("<attributes><key>: <fifths>: Not found.");
             }
             //<key><mode>
-            if (KeyModeNode != null)
+            if (KeyModeElm != null)
             {
-                string RawKeyMode = KeyModeNode.Value ?? "";
+                string RawKeyMode = KeyModeElm.Value ?? "";
                 if (!MidiDefs.ModeMembers.Exists(x => x.Key.Equals(RawKeyMode, StringComparison.OrdinalIgnoreCase)))
                 {
                     throw new ArgumentException("< attributes >< key >: <mode>: Invalid value.");
@@ -73,18 +62,18 @@ namespace Developers.MidiXml.Elements
                 this.Mode = MidiDefs.ModeMembers.FirstOrDefault(x => x.Key.Equals(RawKeyMode, StringComparison.CurrentCultureIgnoreCase)).Value;
             }
             //<transpose><diatonic>
-            if (TransDiatonicNode != null)
+            if (TransDiatonicElm != null)
             {
-                if (!int.TryParse(TransDiatonicNode.Value, out int RawTansDiatonicInt))
+                if (!int.TryParse(TransDiatonicElm.Value, out int RawTansDiatonicInt))
                 {
                     throw new ArgumentException("<attributes><transpose>: <diatonic>: Invalid value.");
                 }
                 this.TransposeDiatonic = RawTansDiatonicInt;
             }
             //<transpose><chromatic>
-            if (TransChromaticNode != null)
+            if (TransChromaticElm != null)
             {
-                if (!int.TryParse(TransChromaticNode.Value, out int RawTansChromaticInt))
+                if (!int.TryParse(TransChromaticElm.Value, out int RawTansChromaticInt))
                 {
                     throw new ArgumentException("<attributes><transpose>: <chromatic>: Invalid value.");
                 }

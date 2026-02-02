@@ -186,9 +186,13 @@ namespace Developers.MidiXml.Elements
 
         public enum Syllabic
         {
+            [Description("single")]
             Single = 1,
+            [Description("begin")]
             Begin = 2,
+            [Description("end")]
             End = 3,
+            [Description("middle")]
             Middle = 4
         }
 

@@ -26,19 +26,20 @@ namespace Developers.MidiXml.Elements
         /// <summary>
         /// コンストラクタ(XDocument版)
         /// </summary>
-        /// <param name="Node"></param>
-        public Root(XElement Node)
+        /// <param name="SourceElm"></param>
+        public Root(XElement SourceElm)
         {
-            //タグの読み取り
-            XElement? StepNode = Node.Element("root-step");
-            XElement? AlterNode = Node.Element("root-alter");
+            //ソース読み取り
+            XElement? StepElm = SourceElm.Element("root-step");
+            XElement? AlterElm = SourceElm.Element("root-alter");
+
             //必須タグのチェック
-            if (StepNode == null)
+            if (StepElm == null)
             {
                 throw new FormatException("<root>: <root-step>: Not found.");
             }
             //必須データの正当性チェック
-            string RawStep = StepNode.Value ?? "";
+            string RawStep = StepElm.Value ?? "";
             if (!MidiDefs.StepMembers.Exists(x => x.Key.Equals(RawStep, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new ArgumentException("<root>: <root-step>: Invalid value.");
@@ -46,10 +47,10 @@ namespace Developers.MidiXml.Elements
             //必須データのセット
             this.Step = MidiDefs.StepMembers.FirstOrDefault(x => x.Key.Equals(RawStep, StringComparison.CurrentCultureIgnoreCase)).Value;
             //任意データの処理
-            if (AlterNode != null)
+            if (AlterElm != null)
             {
                 //任意データのセット
-                if (!int.TryParse(AlterNode.Value, out int RawAlterInt))
+                if (!int.TryParse(AlterElm.Value, out int RawAlterInt))
                 {
                     throw new ArgumentException("<root>: <root-alter>: Invalid value.");
                 }

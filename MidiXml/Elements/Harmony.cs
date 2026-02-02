@@ -31,26 +31,27 @@ namespace Developers.MidiXml.Elements
         /// <summary>
         /// コンストラクタ(XDocument版)
         /// </summary>
-        /// <param name="Node"></param>
-        public Harmony(XElement Node)
+        /// <param name="SourceElm"></param>
+        public Harmony(XElement SourceElm)
         {
-            //タグの読み取り
-            XElement? RootNode = Node.Element("root");
-            XElement? KindNode = Node.Element("kind");
-            IEnumerable<XElement> DegreeNodes = Node.Elements("degree");
+            //ソース読み取り
+            XElement? RootElm = SourceElm.Element("root");
+            XElement? KindElm = SourceElm.Element("kind");
+            IEnumerable<XElement> DegreeNodes = SourceElm.Elements("degree");
+
             //<root>
-            if (RootNode != null)
+            if (RootElm != null)
             {
-                this.Root = new Root(RootNode);
+                this.Root = new Root(RootElm);
             }
             else
             {
                 throw new FormatException("<harmony>: <root>: Not found.");
             }
             //<kind>
-            if (KindNode != null)
+            if (KindElm != null)
             {
-                string? RawKind = KindNode.Value ?? "";
+                string? RawKind = KindElm.Value ?? "";
                 if (!MidiDefs.KindMembers.Exists(x => x.Key.Equals(RawKind, StringComparison.OrdinalIgnoreCase)))
                 {
                     throw new ArgumentException("<harmony>: <kind>: Invalid value.");

@@ -11,18 +11,20 @@ namespace Developers.MidiXml.Elements
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        /// <param name="Node"></param>
+        /// <param name="SourceElm"></param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="FormatException"></exception>
-        public Degree(XElement Node)
+        public Degree(XElement SourceElm)
         {
-            XElement? ValueNode = Node.Element("degree-value");
-            XElement? AlterNode = Node.Element("degree-alter");
-            XElement? TypeNode = Node.Element("degree-type");
+            //ソース読み取り
+            XElement? ValueElm = SourceElm.Element("degree-value");
+            XElement? AlterElm = SourceElm.Element("degree-alter");
+            XElement? TypeElm = SourceElm.Element("degree-type");
+
             //<degree-value>
-            if (ValueNode != null)
+            if (ValueElm != null)
             {
-                if (!int.TryParse(ValueNode.Value, out int RawValueInt))
+                if (!int.TryParse(ValueElm.Value, out int RawValueInt))
                 {
                     throw new ArgumentException("degree>: <degree-value>: Invalid value.");
                 }
@@ -33,9 +35,9 @@ namespace Developers.MidiXml.Elements
                 throw new FormatException("<degree>: <Degree-Value>: Not found.");
             }
             //<degree-alter>
-            if (AlterNode != null)
+            if (AlterElm != null)
             {
-                if (!int.TryParse(AlterNode.Value, out int RawAlterInt))
+                if (!int.TryParse(AlterElm.Value, out int RawAlterInt))
                 {
                     throw new ArgumentException("degree>: <degree-value>: Invalid value.");
                 }
@@ -50,9 +52,9 @@ namespace Developers.MidiXml.Elements
                 throw new ArgumentException("<degree>: <degree-alter>: Out of range.");
             }
             //<degree-type>
-            if (TypeNode != null)
+            if (TypeElm != null)
             {
-                string? RawType = TypeNode.Value ?? "";
+                string? RawType = TypeElm.Value ?? "";
                 if (!MidiDefs.DegreeTypeMembers.Exists(x => x.Key.Equals(RawType, StringComparison.OrdinalIgnoreCase)))
                 {
                     throw new ArgumentException("<degree>: <degree-type>: Invalid value.");

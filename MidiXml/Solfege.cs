@@ -33,7 +33,7 @@ namespace Developers.MidiXml
         /// <summary>
         /// MusicXmlのノードリスト
         /// </summary>
-        private List<MidiElement> MidiNodes { get; set; } = [];
+        private List<MidiElement> MidiElms { get; set; } = [];
 
         /// <summary>
         /// MusicXmlのXDocument
@@ -63,42 +63,43 @@ namespace Developers.MidiXml
         public void XmlImport(string ImportPath)
         {
             //ノードリストの初期化
-            this.MidiNodes = [];
+            this.MidiElms = [];
+            KeyTranspose Key = new KeyTranspose();
             //Xmlドキュメントの取得
             this.MusicXDocument = XDocument.Load(ImportPath);
             //<measure>のリストを取得(パートは無視)
-            IEnumerable<XElement> MeasureNodes = MusicXDocument.Descendants("measure");
-            foreach (XElement MeasureNode in MeasureNodes)
+            IEnumerable<XElement> MeasureElms = MusicXDocument.Descendants("measure");
+            foreach (XElement MeasureElm in MeasureElms)
             {
                 //全ノード検索
-                foreach (XElement ChileNode in MeasureNode.Nodes())
+                foreach (XElement ChildElm in MeasureElm.Elements())
                 {
                     //<attributes>
-                    if (ChileNode.Name.LocalName.Equals("attributes"))
+                    if (ChildElm.Name.LocalName.Equals("attributes"))
                     {
                         //<key>があれば読み取り
-                        if (ChileNode.Element("key") != null)
+                        if (ChildElm.Element("key") != null)
                         {
-                            KeyTranspose Key = new KeyTranspose(ChileNode);
-                            MidiNodes.Add(Key);
+                            Key = new KeyTranspose(ChildElm);
+                            MidiElms.Add(Key);
                         }
                     }
                     //<harmony>
-                    else if (ChileNode.Name.LocalName.Equals("harmony"))
+                    else if (ChildElm.Name.LocalName.Equals("harmony"))
                     {
-                        Harmony Chord = new Harmony(ChileNode);
-                        MidiNodes.Add(Chord);
+                        Harmony Chord = new Harmony(ChildElm);
+                        MidiElms.Add(Chord);
                     }
                     //<note>
-                    else if (ChileNode.Name.LocalName.Equals("note"))
+                    else if (ChildElm.Name.LocalName.Equals("note"))
                     {
-                        Note Note = new Note(ChileNode);
-                        MidiNodes.Add(Note);
+                        Note Note = new Note(ChildElm, Key);
+                        MidiElms.Add(Note);
                     }
                 }
             }
             //デバック出力
-            foreach (MidiElement node in MidiNodes)
+            foreach (MidiElement node in MidiElms)
             {
                 Debug.Print(node.DebugDump());
             }
@@ -128,29 +129,29 @@ namespace Developers.MidiXml
                 this.SolfaLyrics = Configs.Solfas.Find(x => x.Name.Equals(SolfaSettingName))!.ToList();
             }
             //ソルフェージュループ
-            for (int i = 0; i < MidiNodes.Count; i++)
+            for (int i = 0; i < MidiElms.Count; i++)
             {
                 //キー
-                if (MidiNodes[i].GetType() == typeof(KeyTranspose))
+                if (MidiElms[i].GetType() == typeof(KeyTranspose))
                 {
                     //キーの保存
-                    Key = (KeyTranspose)MidiNodes[i];
+                    Key = (KeyTranspose)MidiElms[i];
                 }
                 //コード
-                else if (MidiNodes[i].GetType() == typeof(Harmony))
+                else if (MidiElms[i].GetType() == typeof(Harmony))
                 {
                     //コードのセット
-                    Chord = (Harmony)MidiNodes[i];
+                    Chord = (Harmony)MidiElms[i];
                 }
                 //音符
-                else if (MidiNodes[i].GetType() == typeof(Note))
+                else if (MidiElms[i].GetType() == typeof(Note))
                 {
                     //歌詞のセット
                     SetLyrics(Key, Chord, i);
                     //オクターブ調整
                     if (OctaveLower)
                     {
-                        ((Note)MidiNodes[i]).AlterOctave(-1);
+//                        ((Note)MidiNodes[i]).AlterOctave(-1);
                     }
                 }
             }
@@ -165,7 +166,7 @@ namespace Developers.MidiXml
         private void SetLyrics(KeyTranspose Key, Harmony? Chord, int NodeIndex)
         {
             //Noteの取得            
-            Note Note = (Note)MidiNodes[NodeIndex];
+            Note Note = (Note)MidiElms[NodeIndex];
 
             //音符の場合
             if (Note.Pitch != null)
@@ -209,22 +210,7 @@ namespace Developers.MidiXml
                 //lyicはセットしない
                 Note.Lyrics.Clear();
             }
-            //このNoteノードが持つすべての<lyric>を削除する
-            IEnumerable<XElement> LyricNodes = Note.MyElement!.Elements("lyric");
-            foreach (XElement lyric in LyricNodes)
-            {
-                lyric.RemoveAll();
-            }
-            //Lyricリストに存在するLyricインスタンスを<lyric>ノードとしてこのNoteノードに追加する
-            XDocument OwnerDoc = Note.MyElement.Document!;
-            foreach (Lyric lyric in Note.Lyrics)
-            {
-                XElement LyricNode = new XElement("lyric");
-                LyricNode.SetAttributeValue("number", lyric.Number.ToString());
-                LyricNode.Add(new XElement("syllabic", lyric.Syllabic!.ToString()!.ToLower()));
-                LyricNode.Add(new XElement("text", lyric.Text));
-                Note.MyElement.Add(LyricNode);
-            }
+            Note.UpdateLyrics();
         }
 
         /// <summary>
@@ -242,7 +228,7 @@ namespace Developers.MidiXml
             string Text = string.Empty;
 
             //Noteの取得
-            Note Note = (Note)MidiNodes[NodeIndex];
+            Note Note = (Note)MidiElms[NodeIndex];
             //念のためPitchがあることを確認
             if (Note.Pitch != null)
             {
@@ -376,14 +362,14 @@ namespace Developers.MidiXml
         {
             Note? NextNote = null;
             //次ノートの検索
-            for (int i = CurrentIndex + 1; i < MidiNodes.Count; i++)
+            for (int i = CurrentIndex + 1; i < MidiElms.Count; i++)
             {
                 //Noteの場合
-                if (MidiNodes[i].GetType() == typeof(Note))
+                if (MidiElms[i].GetType() == typeof(Note))
                 {
-                    if (NoteMatches((Note)MidiNodes[i], IucludeRest, IncludeTied))
+                    if (NoteMatches((Note)MidiElms[i], IucludeRest, IncludeTied))
                     {
-                        NextNote = (Note)MidiNodes[i];
+                        NextNote = (Note)MidiElms[i];
                         break;
                     }
                 }
@@ -405,11 +391,11 @@ namespace Developers.MidiXml
             for (int i = CurrentIndex - 1; i >= 0; i--)
             {
                 //Noteの場合
-                if (MidiNodes[i].GetType() == typeof(Note))
+                if (MidiElms[i].GetType() == typeof(Note))
                 {
-                    if (NoteMatches((Note)MidiNodes[i], IucludeRest, IncludeTied))
+                    if (NoteMatches((Note)MidiElms[i], IucludeRest, IncludeTied))
                     {
-                        NextNote = (Note)MidiNodes[i];
+                        NextNote = (Note)MidiElms[i];
                         break;
                     }
                 }

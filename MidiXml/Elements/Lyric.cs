@@ -24,20 +24,24 @@ namespace Developers.MidiXml.Elements
         /// <summary>
         /// コンストラクタ(XDocument版)
         /// </summary>
-        /// <param name="Node"></param>
+        /// <param name="SourceElm"></param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="FormatException"></exception>
-        public Lyric(XElement Node)
+        public Lyric(XElement SourceElm)
         {
-            int RawNumberInt = -1;
+            //ソース読み取り
+            XAttribute? NumberAtr = SourceElm.Attribute("number");
+            XElement? SyllabicElm = SourceElm.Element("syllabic");
+            XElement? TextElm = SourceElm.Element("text");
 
-            //number属性
-            if (Node.Attribute("number") != null)
+            //<lyric number>
+            if (NumberAtr != null)
             {
-                string RawNumber = Node.Attribute("number")!.Value ?? "";
+                string RawNumber = NumberAtr.Value;
                 //値の正当性チェック
                 if (RawNumber.Length > 0)
                 {
+                    int RawNumberInt = -1;
                     if (!int.TryParse(RawNumber, out RawNumberInt))
                     {
                         throw new ArgumentException("<lyrics number>: Invalid value.");
@@ -46,10 +50,9 @@ namespace Developers.MidiXml.Elements
                 }
             }
             //<sylabric>
-            XElement? SyllabicNode = Node.Element("syllabic");
-            if (SyllabicNode != null)
+            if (SyllabicElm != null)
             {
-                string RawSyllabic = SyllabicNode.Value ?? "";
+                string RawSyllabic = SyllabicElm.Value ?? "";
                 if (!MidiDefs.SyllabicMembers.Exists(x => x.Key.Equals(RawSyllabic, StringComparison.OrdinalIgnoreCase)))
                 {
                     throw new ArgumentException("<lyrics>: <syllabic>: Invalid value.");
@@ -61,11 +64,23 @@ namespace Developers.MidiXml.Elements
                 throw new FormatException("<lyrics>: <syllabic>: Not found.");
             }
             //<text>
-            XElement? TextNode = Node.Element("text");
-            if (TextNode != null)
+            if (TextElm != null)
             {
-                this.Text = TextNode.Value ?? "";
+                this.Text = TextElm.Value ?? "";
             }
+        }
+
+        /// <summary>
+        /// XElementにシリアライズ
+        /// </summary>
+        /// <param name="Alter"></param>
+        public XElement Serialize()
+        {
+            XElement RetVal = new XElement("lyric");
+            RetVal.SetAttributeValue("number", this.Number.ToString());
+            RetVal.Add(new XElement("syllabic", GetXmlString(this.Syllabic!)));
+            RetVal.Add(new XElement("text", this.Text));
+            return RetVal;
         }
 
         /// <summary>

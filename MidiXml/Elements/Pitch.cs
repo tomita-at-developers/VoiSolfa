@@ -5,26 +5,28 @@ namespace Developers.MidiXml.Elements
     /// <summary>
     /// <pitch>の解析
     /// </summary>
-    public class Pitch : MidiElement
+    public class Pitch : MidiElement//, IEquatable<Pitch?>
     {
         #region "properties"
+
+        private KeyTranspose? Key { get; set; } = null;
 
         /// <summary>
         /// 指定されたステップ
         /// </summary>
-        public MidiDefs.Step RawStep { get; init; } = MidiDefs.Step.C;
+        public MidiDefs.Step RawStep { get; set; } = MidiDefs.Step.C;
         /// <summary>
         /// 指定されたオクターブ
         /// </summary>
-        public int RawOctave { get; init; } = MidiDefs.OCTAVE_CENTER;
+        public int RawOctave { get; set; } = MidiDefs.OCTAVE_CENTER;
         /// <summary>
         /// 指定された半音操作
         /// </summary>
-        public int RawAlter { get; init; } = MidiDefs.ALTER_NATURAL;
+        public int RawAlter { get; set; } = MidiDefs.ALTER_NATURAL;
         /// <summary>
         /// ステップ(実音)
         /// </summary>
-        public MidiDefs.Step Step { get; init; } = MidiDefs.Step.C;
+        public MidiDefs.Step Step { get; private set; } = MidiDefs.Step.C;
         /// <summary>
         /// オクターブ(実音)
         /// </summary>
@@ -32,7 +34,7 @@ namespace Developers.MidiXml.Elements
         /// <summary>
         /// 半音操作(実音)
         /// </summary>
-        public int Alter { get; init; } = MidiDefs.ALTER_NATURAL;
+        public int Alter { get; private set; } = MidiDefs.ALTER_NATURAL;
         /// <summary>
         /// ピッチクラスインスタンス
         /// </summary>
@@ -57,38 +59,44 @@ namespace Developers.MidiXml.Elements
         }
 
         /// <summary>
+        /// コンストラクタ(デフォルト)
+        /// </summary>
+        public Pitch(MidiDefs.Step Step, int Octave, int Alter)
+            : this(Step, Octave, Alter, null)
+        {
+        }
+
+        /// <summary>
         /// コンストラクタ(オクターブを含む全情報)
         /// </summary>
         /// <param name="Step"></param>
         /// <param name="octave"></param>
         /// <param name="Alter"></param>
-        public Pitch(MidiDefs.Step Step, int octave, int Alter)
+        public Pitch(MidiDefs.Step Step, int octave, int Alter, KeyTranspose? Key)
         {
             this.RawStep = Step;
             this.RawAlter = Alter;
             this.RawOctave = octave;
+            this.Key = Key;
             //AlterをStepに変換して実音を求める
-            MidiDefs.Step TempStep = this.RawStep;
-            int TempOctave = this.RawOctave;
-            int TempAlter = this.RawAlter;
-            PitchUtil.AdjustToRealPitch(ref TempStep, ref TempOctave, ref TempAlter);
-            this.Step = TempStep;
-            this.Octave = TempOctave;
-            this.Alter = TempAlter;
+            PitchCalculation();
         }
 
         /// <summary>
         /// コンストラクタ(XDocument版)
         /// </summary>
-        /// <param name="Node"></param>
+        /// <param name="SourceElm"></param>
         /// <exception cref="FormatException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public Pitch(XElement Node)
+        public Pitch(XElement SourceElm, KeyTranspose Key)
         {
-            //タグの読み取り
-            XElement? StepNode = Node.Element("step");
-            XElement? OctaveNode = Node.Element("octave");
-            XElement? AlterNode = Node.Element("alter");
+            //ソース読み取り
+            XElement? StepNode = SourceElm.Element("step");
+            XElement? OctaveNode = SourceElm.Element("octave");
+            XElement? AlterNode = SourceElm.Element("alter");
+
+            //キー情報の保存
+            this.Key = Key;
             //必須タグのチェック
             if (StepNode == null)
             {
@@ -128,15 +136,67 @@ namespace Developers.MidiXml.Elements
                 this.RawAlter = RawAlterInt;
             }
             //AlterをStepに変換して実音を求める
-            MidiDefs.Step TempStep = this.RawStep;
-            int TempOctave = this.RawOctave;
-            int TempAlter = this.RawAlter;
-            PitchUtil.AdjustToRealPitch(ref TempStep, ref TempOctave, ref TempAlter);
-            this.Step = TempStep;
-            this.Octave = TempOctave;
-            this.Alter = TempAlter;
+            PitchCalculation();
         }
 
+        #endregion
+
+        #region "override-related methods"
+        /*
+        /// <summary>
+        /// Eualsの実装
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(Pitch? other)
+        {
+            return other is not null &&
+                   Step == other.Step &&
+                   Octave == other.Octave &&
+                   Alter == other.Alter;
+        }
+
+        /// <summary>
+        /// Equalsの実装
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as Pitch);
+        }
+
+        /// <summary>
+        /// == 演算子の実装
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
+        public static bool operator ==(Pitch? left, Pitch? right)
+        {
+            return EqualityComparer<Pitch>.Default.Equals(left, right);
+        }
+
+        /// <summary>
+        /// != 演算子の実装
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
+        public static bool operator !=(Pitch? left, Pitch? right)
+        {
+            return !(left == right);
+        }
+
+        /// <summary>
+        /// GetHashCodeの実装
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(this.Step, this.Alter, this.Octave);
+        }
+        */
         #endregion
 
         #region "public methods"
@@ -147,7 +207,36 @@ namespace Developers.MidiXml.Elements
         /// <returns></returns>
         public Pitch Clone()
         {
-            return new Pitch(this.RawStep, this.RawOctave, this.RawAlter);
+            return new Pitch(this.RawStep, this.RawOctave, this.RawAlter, this.Key);
+        }
+
+        /// <summary>
+        /// XElementにシリアライズ
+        /// </summary>
+        /// <param name="Alter"></param>
+        public XElement Serialize()
+        {
+            XElement RetVal = new XElement("pitch");
+            RetVal.Add(new XElement("<step>", this.Step));
+            RetVal.Add(new XElement("<alter>", this.Alter));
+            RetVal.Add(new XElement("<octave>", this.Octave));
+            return RetVal;
+        }
+
+        public void Transpose(Pitch OrigKey, Pitch TargKey, int Direction)
+        {
+
+        }
+
+        /// <summary>
+        /// オクターブ変更
+        /// </summary>
+        /// <param name="Alter"></param>
+        public void AlterOctave(int Alter)
+        {
+            this.RawOctave += Alter;
+            //AlterをStepに変換して実音を求める
+            PitchCalculation();
         }
 
         /// <summary>
@@ -161,15 +250,6 @@ namespace Developers.MidiXml.Elements
         }
 
         /// <summary>
-        /// オクターブ変更
-        /// </summary>
-        /// <param name="Alter"></param>
-        public void AlterOctave(int Alter)
-        {
-            this.Octave += Alter;
-        }
-        
-        /// <summary>
         /// 半音操作した新しいPitchの取得
         /// </summary>
         /// <param name="Alter"></param>
@@ -180,6 +260,23 @@ namespace Developers.MidiXml.Elements
         }
 
         #endregion
+
+        /// <summary>
+        ///RawStep, RawAlter, RawOctaveを再計算してStep, Alter, Octaveを設定する
+        /// </summary>
+        private void PitchCalculation()
+        {
+            //AlterをStepに変換して実音を求める
+            MidiDefs.Step TempStep = this.RawStep;
+            int TempOctave = this.RawOctave;
+            int TempAlter = this.RawAlter;
+            PitchUtil.AdjustToRealPitch(ref TempStep, ref TempOctave, ref TempAlter);
+            this.Step = TempStep;
+            this.Octave = TempOctave;
+            this.Alter = TempAlter;
+        }
+
+
 
         #region "debug methods"
 

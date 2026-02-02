@@ -14,18 +14,21 @@ namespace Developers.MidiXml.Elements
         /// <summary>
         /// コンストラクタ(XDocument版)
         /// </summary>
-        /// <param name="Node"></param>
+        /// <param name="SourceElm"></param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="FormatException"></exception>
-        public Notations(XElement Node)
+        public Notations(XElement SourceElm)
         {
+            //ソース読み取り
+            XElement? TiedElm = SourceElm.Element("tied");
+            XElement? TupletElm = SourceElm.Element("tuplet");
+
             //<tied>
-            XElement? TiedNode = Node.Element("tied");
-            if (TiedNode != null)
+            if (TiedElm != null)
             {
-                if (TiedNode.Attribute("type") != null)
+                if (TiedElm.Attribute("type") != null)
                 {
-                    string RawTiedType = TiedNode.Attribute("type")!.Value ?? "";
+                    string RawTiedType = TiedElm.Attribute("type")!.Value ?? "";
                     //値の正当性チェック
                     if (!MidiDefs.TiedTypeMembers.Exists(x => x.Key.Equals(RawTiedType, StringComparison.OrdinalIgnoreCase)))
                     {
@@ -40,12 +43,11 @@ namespace Developers.MidiXml.Elements
                 }
             }
             //<tuplet>
-            XElement? TupletNode = Node.Element("tuplet");
-            if (TupletNode != null)
+            if (TupletElm != null)
             {
-                if (TupletNode.Attribute("type") != null)
+                if (TupletElm.Attribute("type") != null)
                 {
-                    string RawTupletType = TupletNode.Attribute("type")!.Value ?? "";
+                    string RawTupletType = TupletElm.Attribute("type")!.Value ?? "";
                     //値の正当性チェック
                     if (!MidiDefs.TupletTypeMembers.Exists(x => x.Key.Equals(RawTupletType, StringComparison.OrdinalIgnoreCase)))
                     {
@@ -61,7 +63,7 @@ namespace Developers.MidiXml.Elements
             }
             else
             {
-                if (!Node.HasElements)
+                if (!SourceElm.HasElements)
                 {
                     throw new FormatException("<notations>: No ekement found.");
                 }
