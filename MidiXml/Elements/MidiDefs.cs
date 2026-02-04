@@ -2,6 +2,9 @@
 
 namespace Developers.MidiXml.Elements
 {
+    /// <summary>
+    /// MusicXmlに関する各種定義
+    /// </summary>
     public static class MidiDefs
     {
         public const int ALTER_DOUBLE_SHARP = 2;

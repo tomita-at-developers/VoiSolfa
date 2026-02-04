@@ -271,7 +271,7 @@
             RetVal = (NoteIndex - RootIndex);
             if (RetVal >= 0)
             {
-                RetVal = RetVal % 12;
+                RetVal %= 12;
             }
             else
             {

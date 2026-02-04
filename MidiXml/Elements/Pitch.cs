@@ -3,26 +3,12 @@
 namespace Developers.MidiXml.Elements
 {
     /// <summary>
-    /// <pitch>の解析
+    /// <pitch>情報
     /// </summary>
     public class Pitch : MidiElement//, IEquatable<Pitch?>
     {
         #region "properties"
 
-        private KeyTranspose? Key { get; set; } = null;
-
-        ///// <summary>
-        ///// 指定されたステップ
-        ///// </summary>
-        //public MidiDefs.Step RawStep { get; set; } = MidiDefs.Step.C;
-        ///// <summary>
-        ///// 指定されたオクターブ
-        ///// </summary>
-        //public int RawOctave { get; set; } = MidiDefs.OCTAVE_CENTER;
-        ///// <summary>
-        ///// 指定された半音操作
-        ///// </summary>
-        //public int RawAlter { get; set; } = MidiDefs.ALTER_NATURAL;
         /// <summary>
         /// ステップ(オリジナル)
         /// </summary>
@@ -64,66 +50,47 @@ namespace Developers.MidiXml.Elements
         #region "constructors"
 
         /// <summary>
-        /// コンストラクタ(デフォルト)
-        /// </summary>
-        public Pitch()
-            : this(MidiDefs.Step.C, MidiDefs.OCTAVE_CENTER, MidiDefs.ALTER_NATURAL)
-        {
-        }
-
-        /// <summary>
-        /// コンストラクタ(デフォルト)
-        /// </summary>
-        public Pitch(MidiDefs.Step Step, int Octave, int Alter)
-            : this(Step, Octave, Alter, null)
-        {
-        }
-
-        /// <summary>
         /// コンストラクタ(オクターブを含む全情報)
         /// </summary>
         /// <param name="Step"></param>
         /// <param name="octave"></param>
         /// <param name="Alter"></param>
-        public Pitch(MidiDefs.Step Step, int octave, int Alter, KeyTranspose? Key)
+        public Pitch(MidiDefs.Step Step, int octave, int Alter)
         {
             this.Step = Step;
             this.Alter = Alter;
             this.Octave = octave;
-            this.Key = Key;
         }
 
         /// <summary>
         /// コンストラクタ(XDocument版)
         /// </summary>
-        /// <param name="SourceElm"></param>
+        /// <param name="Source"></param>
         /// <exception cref="FormatException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public Pitch(XElement SourceElm, KeyTranspose Key)
+        public Pitch(XElement Source)
         {
             //ソース読み取り
-            XElement? StepNode = SourceElm.Element("step");
-            XElement? OctaveNode = SourceElm.Element("octave");
-            XElement? AlterNode = SourceElm.Element("alter");
+            XElement? ElmStep = Source.Element("step");
+            XElement? ElmOctave = Source.Element("octave");
+            XElement? AlmAlter = Source.Element("alter");
 
-            //キー情報の保存
-            this.Key = Key;
             //必須タグのチェック
-            if (StepNode == null)
+            if (ElmStep == null)
             {
                 throw new FormatException("<pitch>: <step>: Not found.");
             }
-            if (OctaveNode == null)
+            if (ElmOctave == null)
             {
                 throw new FormatException("<pitch>: <octave> Not found.");
             }
             //必須データの正当性チェック
-            string RawStep = StepNode.Value ?? "";
+            string RawStep = ElmStep.Value ?? "";
             if (!MidiDefs.StepMembers.Exists(x => x.Key.Equals(RawStep, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new ArgumentException("<pitch>: <step>: Invalid value.");
             }
-            if (!int.TryParse(OctaveNode.Value, out int RawOctaveInt))
+            if (!int.TryParse(ElmOctave.Value, out int RawOctaveInt))
             {
                 throw new ArgumentException("<pitch>: <octave>: Invalid value.");
             }
@@ -131,10 +98,10 @@ namespace Developers.MidiXml.Elements
             this.Step = MidiDefs.StepMembers.FirstOrDefault(x => x.Key.Equals(RawStep, StringComparison.CurrentCultureIgnoreCase)).Value;
             this.Octave = RawOctaveInt;
             //任意データの処理
-            if (AlterNode != null)
+            if (AlmAlter != null)
             {
                 //任意データのセット
-                if (!int.TryParse(AlterNode.Value, out int RawAlterInt))
+                if (!int.TryParse(AlmAlter.Value, out int RawAlterInt))
                 {
                     throw new ArgumentException("<pitch>: <alter>: Invalid value.");
                 }
@@ -216,7 +183,7 @@ namespace Developers.MidiXml.Elements
         /// <returns></returns>
         public Pitch Clone()
         {
-            return new Pitch(this.Step, this.Octave, this.Alter, this.Key);
+            return new Pitch(this.Step, this.Octave, this.Alter);
         }
 
         /// <summary>
@@ -232,7 +199,11 @@ namespace Developers.MidiXml.Elements
             return RetVal;
         }
 
-        public void Transpose(Pitch OrigKey, Pitch TargKey, int Direction)
+        /// <summary>
+        /// 移調楽器向けの記述をコンサートキーでの記述に変更
+        /// </summary>
+        /// <param name="Key"></param>
+        public void TransposeToConcertKey(Key Key)
         {
 
         }
@@ -279,7 +250,6 @@ namespace Developers.MidiXml.Elements
             string Dump = string.Empty;
 
             Dump += "<pitch>";
-            Dump += "[real}";
             Dump += "<step>" + Step.ToString();
             Dump += "<alter>" + Alter.ToString();
             Dump += "<octave>" + Octave.ToString();

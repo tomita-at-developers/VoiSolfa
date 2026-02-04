@@ -3,32 +3,37 @@
 namespace Developers.MidiXml.Elements
 {
     /// <summary>
-    /// <notations>の解析
+    /// <notations>情報(tie, tupletのみ)
     /// </summary>
     public class Notations : MidiElement
     {
+        #region "public properties"
+
         public MidiDefs.TiedType? TiedType { get; init; } = null;
         public MidiDefs.StartStop? TupletType { get; init; } = null;
 
+        #endregion
+
+        #region "constructors"
 
         /// <summary>
         /// コンストラクタ(XDocument版)
         /// </summary>
-        /// <param name="SourceElm"></param>
+        /// <param name="Source"></param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="FormatException"></exception>
-        public Notations(XElement SourceElm)
+        public Notations(XElement Source)
         {
             //ソース読み取り
-            XElement? TiedElm = SourceElm.Element("tied");
-            XElement? TupletElm = SourceElm.Element("tuplet");
+            XElement? ElmTied = Source.Element("tied");
+            XElement? ElmTuplet = Source.Element("tuplet");
 
             //<tied>
-            if (TiedElm != null)
+            if (ElmTied != null)
             {
-                if (TiedElm.Attribute("type") != null)
+                if (ElmTied.Attribute("type") != null)
                 {
-                    string RawTiedType = TiedElm.Attribute("type")!.Value ?? "";
+                    string RawTiedType = ElmTied.Attribute("type")!.Value ?? "";
                     //値の正当性チェック
                     if (!MidiDefs.TiedTypeMembers.Exists(x => x.Key.Equals(RawTiedType, StringComparison.OrdinalIgnoreCase)))
                     {
@@ -43,11 +48,11 @@ namespace Developers.MidiXml.Elements
                 }
             }
             //<tuplet>
-            if (TupletElm != null)
+            if (ElmTuplet != null)
             {
-                if (TupletElm.Attribute("type") != null)
+                if (ElmTuplet.Attribute("type") != null)
                 {
-                    string RawTupletType = TupletElm.Attribute("type")!.Value ?? "";
+                    string RawTupletType = ElmTuplet.Attribute("type")!.Value ?? "";
                     //値の正当性チェック
                     if (!MidiDefs.TupletTypeMembers.Exists(x => x.Key.Equals(RawTupletType, StringComparison.OrdinalIgnoreCase)))
                     {
@@ -63,12 +68,16 @@ namespace Developers.MidiXml.Elements
             }
             else
             {
-                if (!SourceElm.HasElements)
+                if (!Source.HasElements)
                 {
                     throw new FormatException("<notations>: No ekement found.");
                 }
             }
         }
+
+        #endregion
+
+        #region "debug methods"
 
         /// <summary>
         /// デバック用ダンプ
@@ -83,5 +92,7 @@ namespace Developers.MidiXml.Elements
             Dump += (TupletType != null ? "<tuplet type=" + TupletType.ToString() + ">" : "");
             return Dump;
         }
+
+        #endregion
     }
 }

@@ -1,25 +1,25 @@
 ﻿namespace Developers.MidiXml.Elements
 {
-    public class PitchClass
+    /// <summary>
+    /// ピッチクラス情報(オクターブを意識しない音名)
+    /// </summary>
+    /// <remarks>
+    /// コンストラクタ
+    /// </remarks>
+    /// <param name="Step"></param>
+    /// <param name="Alter"></param>
+    public class PitchClass(MidiDefs.Step Step, int Alter)
     {
         #region "properties"
 
-        ///// <summary>
-        ///// 指定されたステップ
-        ///// </summary>
-        //public MidiDefs.Step RawStep { get; init; } = MidiDefs.Step.C;
-        ///// <summary>
-        ///// 指定された半音操作
-        ///// </summary>
-        //public int RawAlter { get; init; } = MidiDefs.ALTER_NATURAL;
         /// <summary>
         /// ステップ(オリジナル)
         /// </summary>
-        public MidiDefs.Step Step { get; init; } = MidiDefs.Step.C;
+        public MidiDefs.Step Step { get; init; } = Step;
         /// <summary>
         /// 半音操作(オリジナル)
         /// </summary>
-        public int Alter { get; init; } = MidiDefs.ALTER_NATURAL;
+        public int Alter { get; init; } = Alter;
         /// <summary>
         /// Stepに対して冗長なAlterを短縮したPitchClass
         /// </summary>
@@ -39,24 +39,7 @@
 
         #region "constructors"
 
-        /// <summary>
-        /// コンストラクタ(デフォルト)
-        /// </summary>
-        public PitchClass()
-            : this(MidiDefs.Step.C, MidiDefs.ALTER_NATURAL)
-        {
-        }
-
-        /// <summary>
-        /// コンストラクタ(完全)
-        /// </summary>
-        /// <param name="Step"></param>
-        /// <param name="Alter"></param>
-        public PitchClass(MidiDefs.Step Step, int Alter)
-        {
-            this.Step = Step;
-            this.Alter = Alter;
-        }
+        //primary constructor only.
 
         #endregion
 

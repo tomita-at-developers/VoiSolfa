@@ -3,6 +3,9 @@ using System.Reflection;
 
 namespace Developers.MidiXml.Elements
 {
+    /// <summary>
+    /// MusicXmlのElementが持つ基本情報
+    /// </summary>
     abstract public class MidiElement
     {
 
@@ -11,7 +14,7 @@ namespace Developers.MidiXml.Elements
         /// </summary>
         /// <param name="Value"></param>
         /// <returns></returns>
-        public string GetXmlString(object Value)
+        protected string GetXmlString(object Value)
         {
             string Description = string.Empty;
             FieldInfo? FieldInfo = Value.GetType().GetField(Value.ToString()!);

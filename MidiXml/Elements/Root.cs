@@ -3,10 +3,12 @@
 namespace Developers.MidiXml.Elements
 {
     /// <summary>
-    /// <harmonyで指定されるコードのルート音(AlterのStep繰り上げは行わない)
+    /// <root>情報(<harmonyで指定されるコードのルート音情報)
     /// </summary>
     public class Root : MidiElement
     {
+        #region "public properties"
+
         /// <summary>
         /// ステップ(オリジナル)
         /// </summary>
@@ -26,30 +28,38 @@ namespace Developers.MidiXml.Elements
             }
         }
 
+        #endregion
+
+        #region "constructors"
+
         /// <summary>
-        /// コンストラクタ(デフォルト)
+        /// コンストラクタ
         /// </summary>
-        public Root()
+        /// <param name="Step"></param>
+        /// <param name="Alter"></param>
+        public Root(MidiDefs.Step Step, int Alter)
         {
+            this.Step = Step;
+            this.Alter = Alter;
         }
 
         /// <summary>
         /// コンストラクタ(XDocument版)
         /// </summary>
-        /// <param name="SourceElm"></param>
-        public Root(XElement SourceElm)
+        /// <param name="Source"></param>
+        public Root(XElement Source)
         {
             //ソース読み取り
-            XElement? StepElm = SourceElm.Element("root-step");
-            XElement? AlterElm = SourceElm.Element("root-alter");
+            XElement? ElmStep = Source.Element("root-step");
+            XElement? ElmAlter = Source.Element("root-alter");
 
             //必須タグのチェック
-            if (StepElm == null)
+            if (ElmStep == null)
             {
                 throw new FormatException("<root>: <root-step>: Not found.");
             }
             //必須データの正当性チェック
-            string RawStep = StepElm.Value ?? "";
+            string RawStep = ElmStep.Value ?? "";
             if (!MidiDefs.StepMembers.Exists(x => x.Key.Equals(RawStep, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new ArgumentException("<root>: <root-step>: Invalid value.");
@@ -57,10 +67,10 @@ namespace Developers.MidiXml.Elements
             //必須データのセット
             this.Step = MidiDefs.StepMembers.FirstOrDefault(x => x.Key.Equals(RawStep, StringComparison.CurrentCultureIgnoreCase)).Value;
             //任意データの処理
-            if (AlterElm != null)
+            if (ElmAlter != null)
             {
                 //任意データのセット
-                if (!int.TryParse(AlterElm.Value, out int RawAlterInt))
+                if (!int.TryParse(ElmAlter.Value, out int RawAlterInt))
                 {
                     throw new ArgumentException("<root>: <root-alter>: Invalid value.");
                 }
@@ -73,6 +83,10 @@ namespace Developers.MidiXml.Elements
                 this.Alter = RawAlterInt;
             }
         }
+
+        #endregion
+
+        #region "debug methods"
 
         /// <summary>
         /// デバック用ダンプ
@@ -87,5 +101,7 @@ namespace Developers.MidiXml.Elements
             Dump += "<root-alter>" + Alter.ToString();
             return Dump;
         }
+
+        #endregion
     }
 }

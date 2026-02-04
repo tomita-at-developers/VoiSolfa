@@ -1,12 +1,34 @@
-﻿using System.Xml.Linq;
+﻿using System.Net.Http.Headers;
+using System.Xml.Linq;
 
 namespace Developers.MidiXml.Elements
 {
+    /// <summary>
+    /// <lyric>情報(歌詞情報)
+    /// </summary>
     public class Lyric : MidiElement
     {
-        public int? Number { get; init; } = null;
-        public MidiDefs.Syllabic? Syllabic { get; init; } = null;
+        #region "public Properties"
+
+        public int? Number { get; init; } = 0;
+        public MidiDefs.Syllabic? Syllabic { get; init; } = MidiDefs.Syllabic.Single;
         public string Text { get; init; } = string.Empty;
+        public string SyllabicString
+        {
+            get
+            {
+                string RetVal = string.Empty;
+                if (Syllabic != null)
+                {
+                    RetVal = GetXmlString(this.Syllabic);
+                }
+                return RetVal;
+            }
+        }
+
+        #endregion
+
+        #region "constructors"
 
         /// <summary>
         /// コンストラクタ
@@ -14,11 +36,11 @@ namespace Developers.MidiXml.Elements
         /// <param name="number"></param>
         /// <param name="syllabic"></param>
         /// <param name="text"></param>
-        public Lyric(int? number, MidiDefs.Syllabic? syllabic, string text)
+        public Lyric(int? Number, MidiDefs.Syllabic Syllabic, string Text)
         {
-            this.Number = number;
-            this.Syllabic = syllabic;
-            this.Text = text;
+            this.Number = Number;
+            this.Syllabic = Syllabic;
+            this.Text = Text;
         }
 
         /// <summary>
@@ -70,6 +92,8 @@ namespace Developers.MidiXml.Elements
             }
         }
 
+        #endregion
+
         /// <summary>
         /// XElementにシリアライズ
         /// </summary>
@@ -78,7 +102,7 @@ namespace Developers.MidiXml.Elements
         {
             XElement RetVal = new XElement("lyric");
             RetVal.SetAttributeValue("number", this.Number.ToString());
-            RetVal.Add(new XElement("syllabic", GetXmlString(this.Syllabic!)));
+            RetVal.Add(new XElement("syllabic", this.SyllabicString));
             RetVal.Add(new XElement("text", this.Text));
             return RetVal;
         }
@@ -92,7 +116,7 @@ namespace Developers.MidiXml.Elements
             string Dump = string.Empty;
 
             Dump += "<lyric" + (Number != null ? " number=" + Number.ToString() : "") + ">";
-            Dump += "<syllabic>" + Syllabic?.ToString();
+            Dump += "<syllabic>" + this.Syllabic.ToString();
             Dump += "<text>" + Text;
             return Dump;
         }

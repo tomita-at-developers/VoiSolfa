@@ -5,10 +5,12 @@ using static Developers.MidiXml.Elements.MidiDefs;
 namespace Developers.MidiXml.Elements
 {
     /// <summary>
-    /// <note>の解析
+    /// <note>情報
     /// </summary>
     public class Note : MidiElement
     {
+        #region "definitions"
+
         /// <summary>
         /// Noteのチェイン状態(タイ状態)を示す
         /// </summary>
@@ -20,10 +22,14 @@ namespace Developers.MidiXml.Elements
             Last = 3,
         }
 
+        #endregion
+
+        #region "public properties"
+
         /// <summary>
         /// このインスタンスに対応するXElement
         /// </summary>
-        public XElement SourceElm { get; init; }
+        public XElement Source { get; init; }
         public string MeasureNumber { get; init; } = string.Empty;
         public Pitch? Pitch { get; set; } = null;
         public bool Rest { get; init; } = false;
@@ -36,49 +42,54 @@ namespace Developers.MidiXml.Elements
         public MidiDefs.Accidental? Accidental { get; init; } = null;
         public List<Lyric> Lyrics { get; init; } = [];
         public ChainType NoteChain { get; init; } = ChainType.Single;
+        public Analysis? Analysis { get; set; } = null!;
+
+        #endregion
+
+        #region "constructors"
 
         /// <summary>
         /// コンストラクタ(XDocument版)
         /// </summary>
-        /// <param name="SourceElm"></param>
-        /// <param name="Key"></param>
+        /// <param name="Source"></param>
         /// <exception cref="FormatException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public Note(XElement SourceElm, KeyTranspose Key)
+        public Note(XElement Source)
         {
             //ソース読み取り
-            XAttribute? MeasureNumberAtr = SourceElm.Parent!.Attribute("number");
-            XElement? PitchElm = SourceElm.Element("pitch");
-            XElement? RestElm = SourceElm.Element("rest");
-            XElement? DurationElm = SourceElm.Element("duration");
-            IEnumerable<XElement> TieElms = SourceElm.Elements("tie");
-            XElement? TypeElm = SourceElm.Element("type");
-            IEnumerable<XElement> DotElms = SourceElm.Elements("dot");
-            XElement? TimeMOdificationElm = SourceElm.Element("time-modification");
-            XElement? NotationsElm = SourceElm.Element("notations");
-            XElement? AccidentalElm = SourceElm.Element("accidental");
-            IEnumerable<XElement> LyricElms = SourceElm.Elements("lyric");
+            XAttribute? AtrMeasureNumber = Source.Parent!.Attribute("number");
+            XElement? ElmPitch = Source.Element("pitch");
+            XElement? ElmRest = Source.Element("rest");
+            XElement? ElmDuration = Source.Element("duration");
+            IEnumerable<XElement> ElmTies = Source.Elements("tie");
+            XElement? ElmType = Source.Element("type");
+            IEnumerable<XElement> ElmDots = Source.Elements("dot");
+            XElement? ElmTimeMOdification = Source.Element("time-modification");
+            XElement? ElmNotations = Source.Element("notations");
+            XElement? ElmAccidental = Source.Element("accidental");
+            XElement? ElmGrace = Source.Element("grace");
+            IEnumerable<XElement> ElmLyrics = Source.Elements("lyric");
 
             //ノード保存
-            this.SourceElm = SourceElm;
+            this.Source = Source;
             //親ノードのnumber属性(小節番号)を取得
-            if (MeasureNumberAtr != null)
+            if (AtrMeasureNumber != null)
             {
-                this.MeasureNumber = MeasureNumberAtr.Value ?? string.Empty;
+                this.MeasureNumber = AtrMeasureNumber.Value ?? string.Empty;
             }
             //<pitch>が存在する場合
-            if (PitchElm != null)
+            if (ElmPitch != null)
             {
                 //restが存在する場合
-                if (RestElm != null)
+                if (ElmRest != null)
                 {
                     //無視
                 }
                 //<pitch>の解析()
-                this.Pitch = new Pitch(PitchElm, Key);
+                this.Pitch = new Pitch(ElmPitch);
             }
             //<rest>が存在する場合
-            else if (RestElm != null)
+            else if (ElmRest != null)
             {
                 this.Rest = true;
             }
@@ -88,9 +99,9 @@ namespace Developers.MidiXml.Elements
                 throw new FormatException("<note>: Invalid format.");
             }
             //<duration>
-            if (DurationElm != null)
+            if (ElmDuration != null)
             {
-                if (!int.TryParse(DurationElm.Value, out int RawDurationInt))
+                if (!int.TryParse(ElmDuration.Value, out int RawDurationInt))
                 {
                     throw new ArgumentException("<note>: <duration>: Invalid value.");
                 }
@@ -99,8 +110,7 @@ namespace Developers.MidiXml.Elements
             else
             {
                 //<grace>があれば<duration>が0であるとみなす。
-                XElement? GraceElm = SourceElm.Element("grace");
-                if (GraceElm != null)
+                if (ElmGrace != null)
                 {
                     this.Duration = 0;
                 }
@@ -110,7 +120,7 @@ namespace Developers.MidiXml.Elements
                 }
             }
             //<tie>
-            foreach (XElement TieElm in TieElms)
+            foreach (XElement TieElm in ElmTies)
             {
                 //type属性
                 if (TieElm.Attribute("type") != null)
@@ -130,9 +140,9 @@ namespace Developers.MidiXml.Elements
                 }
             }
             //<type>
-            if (TypeElm != null)
+            if (ElmType != null)
             {
-                string RawType = TypeElm.Value ?? "";
+                string RawType = ElmType.Value ?? "";
                 //値の正当性チェック
                 if (!MidiDefs.TypeMembers.Exists(x => x.Key.Equals(RawType, StringComparison.OrdinalIgnoreCase)))
                 {
@@ -142,24 +152,24 @@ namespace Developers.MidiXml.Elements
                 this.Type = MidiDefs.TypeMembers.FirstOrDefault(x => x.Key.Equals(RawType, StringComparison.OrdinalIgnoreCase)).Value;
             }
             //<dot>
-            if (DotElms != null && DotElms.Any())
+            if (ElmDots != null && ElmDots.Any())
             {
-                this.Dot = DotElms.Count();
+                this.Dot = ElmDots.Count();
             }
             //<time-modification>
-            if (TimeMOdificationElm != null)
+            if (ElmTimeMOdification != null)
             {
-                this.TimeModification = new TimeModification(TimeMOdificationElm);
+                this.TimeModification = new TimeModification(ElmTimeMOdification);
             }
             //<notations>
-            if (NotationsElm != null)
+            if (ElmNotations != null)
             {
-                this.Notations = new Notations(NotationsElm);
+                this.Notations = new Notations(ElmNotations);
             }
             //<accidental>
-            if (AccidentalElm != null)
+            if (ElmAccidental != null)
             {
-                string RawAccidental = AccidentalElm.Value ?? "";
+                string RawAccidental = ElmAccidental.Value ?? "";
                 //値の正当性チェック
                 if (!MidiDefs.AccidentalMembers.Exists(x => x.Key.Equals(RawAccidental, StringComparison.OrdinalIgnoreCase)))
                 {
@@ -169,9 +179,9 @@ namespace Developers.MidiXml.Elements
                 this.Accidental = MidiDefs.AccidentalMembers.FirstOrDefault(x => x.Key.Equals(RawAccidental, StringComparison.OrdinalIgnoreCase)).Value;
             }
             //<lyric>
-            foreach (XElement LyircElm in LyricElms)
+            foreach (XElement ElmLyirc in ElmLyrics)
             {
-                Lyrics.Add(new Lyric(LyircElm));
+                Lyrics.Add(new Lyric(ElmLyirc));
             }
             //タイ状態のセット
             string TieChain = string.Empty;
@@ -201,43 +211,128 @@ namespace Developers.MidiXml.Elements
             }
         }
 
+        #endregion
+
+        #region "public methods"
+
         /// <summary>
         /// トランスポーズ
         /// </summary>
         /// <param name="OrigKey"></param>
         /// <param name="TargKey"></param>
         /// <param name="AlterOctave"></param>
-        public void Transpose(Pitch OrigKey, Pitch TargKey, int Direction)
+        public void TransposeToConcertKey(Key Key)
         {
             //Pitchがあるときのみ処理(休符はスルー)
             if (Pitch != null)
             {
-                this.Pitch.Transpose(OrigKey, TargKey, Direction);
-                UpdatePitch();
+                ////移調記述されている場合はコンサートキーに変更
+                //if (Key.TransposeChromatic != 0)
+                //{
+                //    this.Pitch.TransposeToConcertKey(Key);
+                //    UpdateXmlPitch();
+                //}
             }
         }
 
         /// <summary>
-        /// オクターブ変更
+        /// ソルファの取得
         /// </summary>
-        /// <param name="Alter"></param>
-        public void AlterOctave(int Alter)
+        /// <param name="Key"></param>
+        /// <param name="Chord"></param>
+        /// <param name="NodeIndex"></param>
+        public void SetLyrics(List<List<string>> SolfaLyrics, bool Debug)
         {
-            //Pitchがあるときのみ処理(休符はスルー)
-            if (Pitch != null)
+            //音符の場合
+            if (this.Pitch != null)
             {
-                this.Pitch.AlterOctave(Alter);
-                UpdatePitch();
+                Lyric? Lyric = null;
+                //歌詞文字列の取得
+                string Text = SolfaLyrics[this.Analysis!.ChromaticIndex][this.Analysis!.EnharmonicIndex];
+                //デバック時はDescriptionを追記
+                Text += Debug ? this.Analysis!.Description : string.Empty;
+
+                //タイの始まり
+                if (this.NoteChain == Note.ChainType.First)
+                {
+                    //lyricにはsyllabic:beginでtextをセット
+                    Lyric = new Lyric(1, MidiDefs.Syllabic.Begin, Text);
+                }
+                //タイの途中
+                else if (this.NoteChain == Note.ChainType.Middle)
+                {
+                    //lyicはセットしない
+                    Lyric = null;
+                }
+                //タイの終了
+                else if (this.NoteChain == Note.ChainType.Last)
+                {
+                    //lyricにはsyllabic:endでtextは空
+                    Lyric = new Lyric(1, MidiDefs.Syllabic.End, "");
+                }
+                //単一
+                else
+                {
+                    //lyricにはsyllabic:singleでtextをセット
+                    Lyric = new Lyric(1, MidiDefs.Syllabic.Single, Text);
+                }
+                //Lyricの再セット
+                this.Lyrics.Clear();
+                if (Lyric != null)
+                {
+                    this.Lyrics.Add(Lyric);
+                }
+            }
+            else
+            {
+                //lyicはセットしない
+                this.Lyrics.Clear();
+            }
+            //XDocumentへの反映
+            UpdateXmlLyrics();
+        }
+
+        ///// <summary>
+        ///// オクターブ変更
+        ///// </summary>
+        ///// <param name="Alter"></param>
+        //public void AlterXmlOctave(int Alter)
+        //{
+        //    //Pitchがあるときのみ処理(休符はスルー)
+        //    if (Pitch != null)
+        //    {
+        //        this.Pitch.AlterOctave(Alter);
+        //        UpdateXmlPitch();
+        //    }
+        //}
+
+        #endregion
+
+        #region "private methods"
+
+        /// <summary>
+        /// pitchの更新
+        /// </summary>
+        private void UpdateXmlPitch()
+        {
+            XElement? PitchElm = Source.Element("pitch");
+            if (PitchElm != null)
+            {
+                PitchElm.Remove();
+                if (this.Pitch != null)
+                {
+                    Source.Add(this.Pitch.Serialize());
+                }
             }
         }
 
         /// <summary>
         /// LyricをXDoucmentにシリアライズする
         /// </summary>
-        public void UpdateLyrics()
+        private void UpdateXmlLyrics()
         {
             //このNoteノードが持つすべての<lyric>を削除する
-            IEnumerable<XElement> LyricElms = this.SourceElm!.Elements("lyric");
+            IEnumerable<XElement> LyricElms = this.Source!.Elements("lyric");
             foreach (XElement LyricElm in LyricElms)
             {
                 LyricElm.RemoveAll();
@@ -246,26 +341,13 @@ namespace Developers.MidiXml.Elements
             foreach (Lyric Lyric in this.Lyrics)
             {
                 XElement LyricElm = Lyric.Serialize();
-                this.SourceElm.Add(LyricElm);
+                this.Source.Add(LyricElm);
             }
         }
 
-        /// <summary>
-        /// pitchの更新
-        /// </summary>
-        private void UpdatePitch()
-        {
-            XElement? PitchElm = SourceElm.Element("pitch");
-            if (PitchElm != null)
-            {
-                PitchElm.Remove();
-                if (this.Pitch != null)
-                {
-                    SourceElm.Add(this.Pitch.Serialize());
-                }
-            }
-        }
+        #endregion
 
+        #region "public methods"
 
         /// <summary>
         /// デバック用ダンプ
@@ -292,7 +374,13 @@ namespace Developers.MidiXml.Elements
             {
                 Dump += l.DebugDump();
             }
+            if (this.Analysis != null)
+            {
+                Dump += this.Analysis.DebugDump();
+            }
             return Dump;
         }
+
+        #endregion
     }
 }

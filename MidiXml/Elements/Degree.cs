@@ -2,29 +2,39 @@
 
 namespace Developers.MidiXml.Elements
 {
+    /// <summary>
+    /// <degree>情報(テンション情報)
+    /// </summary>
     public class Degree : MidiElement
     {
+        #region "properties"
+
         public int Value { get; init; } = 1;
         public int Alter { get; init; } = 0;
+
+        #endregion
+
+        #region "constructors"
+
         public MidiDefs.DegreeType Type { get; set; } = MidiDefs.DegreeType.Add;
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        /// <param name="SourceElm"></param>
+        /// <param name="Source"></param>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="FormatException"></exception>
-        public Degree(XElement SourceElm)
+        public Degree(XElement Source)
         {
             //ソース読み取り
-            XElement? ValueElm = SourceElm.Element("degree-value");
-            XElement? AlterElm = SourceElm.Element("degree-alter");
-            XElement? TypeElm = SourceElm.Element("degree-type");
+            XElement? ElmValue = Source.Element("degree-value");
+            XElement? ElmAlter = Source.Element("degree-alter");
+            XElement? ElmType = Source.Element("degree-type");
 
             //<degree-value>
-            if (ValueElm != null)
+            if (ElmValue != null)
             {
-                if (!int.TryParse(ValueElm.Value, out int RawValueInt))
+                if (!int.TryParse(ElmValue.Value, out int RawValueInt))
                 {
                     throw new ArgumentException("degree>: <degree-value>: Invalid value.");
                 }
@@ -35,9 +45,9 @@ namespace Developers.MidiXml.Elements
                 throw new FormatException("<degree>: <Degree-Value>: Not found.");
             }
             //<degree-alter>
-            if (AlterElm != null)
+            if (ElmAlter != null)
             {
-                if (!int.TryParse(AlterElm.Value, out int RawAlterInt))
+                if (!int.TryParse(ElmAlter.Value, out int RawAlterInt))
                 {
                     throw new ArgumentException("degree>: <degree-value>: Invalid value.");
                 }
@@ -52,9 +62,9 @@ namespace Developers.MidiXml.Elements
                 throw new ArgumentException("<degree>: <degree-alter>: Out of range.");
             }
             //<degree-type>
-            if (TypeElm != null)
+            if (ElmType != null)
             {
-                string? RawType = TypeElm.Value ?? "";
+                string? RawType = ElmType.Value ?? "";
                 if (!MidiDefs.DegreeTypeMembers.Exists(x => x.Key.Equals(RawType, StringComparison.OrdinalIgnoreCase)))
                 {
                     throw new ArgumentException("<degree>: <degree-type>: Invalid value.");
@@ -66,6 +76,10 @@ namespace Developers.MidiXml.Elements
                 throw new ArgumentException("<degree>: <Degree-type>: Invalid value.");
             }
         }
+
+        #endregion
+
+        #region "debug methods"
 
         /// <summary>
         /// デバック用ダンプ
@@ -81,5 +95,7 @@ namespace Developers.MidiXml.Elements
             Dump += "<degree-type>" + this.Type.ToString();
             return Dump;
         }
+
+        #endregion
     }
 }

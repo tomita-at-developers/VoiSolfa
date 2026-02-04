@@ -108,7 +108,7 @@ namespace VoiSolfa
                     string OutputFileName = string.Empty;
                     //「ファイル保存」ダイアログの表示
                     this.DlgSaveFile.InitialDirectory = Path.GetDirectoryName(this.TxtXmlPath.Text);
-                    this.DlgSaveFile.FileName = DateTime.Now.ToString("yyyyMMddHHmmss") + "_" + Path.GetFileName(this.TxtXmlPath.Text);
+                    this.DlgSaveFile.FileName =  Path.GetFileNameWithoutExtension(this.TxtXmlPath.Text) + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xml";
                     this.DlgSaveFile.Filter = "MusixXmlファイル(*.xml;*.musicxml)|*.xml;*.musicxml|すべてのファイル(*.*)|*.*";
                     this.DlgSaveFile.FilterIndex = 1;
                     this.DlgSaveFile.OverwritePrompt = true;
@@ -120,9 +120,18 @@ namespace VoiSolfa
                         OutputFileName = this.DlgSaveFile.FileName;
                         //Solgaの生成
                         Solfege Solfege = new Solfege();
+                        //MusicXmlファイルのインポート
                         Solfege.XmlImport(this.TxtXmlPath.Text);
-                        Solfege.CreateLyrics(this.CmbSolfaSetting.SelectedItem.ToString(), this.CbxOctaveDown.Checked);
+                        //ソルファ歌詞の生成
+                        Solfege.CreateLyrics(this.CmbSolfaSetting.SelectedItem.ToString());
+                        //コンサートキーに転調する場合
+                        if (this.CbxTransposeToConcertKey.Checked)
+                        {
+                            Solfege.TransposeToConcerKey();
+                        }
+                        //MusicXmlファイルの生成
                         Solfege.XmlExport(OutputFileName);
+                        //完了メッセージ
                         MessageBox.Show("Music Xml file is saved." + Environment.NewLine + OutputFileName);
                     }
                 }

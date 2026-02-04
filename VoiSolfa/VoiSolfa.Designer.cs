@@ -37,7 +37,7 @@
             DlgSaveFile = new SaveFileDialog();
             LblSolfaSetting = new Label();
             CmbSolfaSetting = new ComboBox();
-            CbxOctaveDown = new CheckBox();
+            CbxTransposeToConcertKey = new CheckBox();
             SuspendLayout();
             // 
             // TxtXmlPath
@@ -114,22 +114,24 @@
             CmbSolfaSetting.Size = new Size(628, 28);
             CmbSolfaSetting.TabIndex = 4;
             // 
-            // CbxOctaveDown
+            // CbxTransposeToConcertKey
             // 
-            CbxOctaveDown.AutoSize = true;
-            CbxOctaveDown.Location = new Point(115, 99);
-            CbxOctaveDown.Name = "CbxOctaveDown";
-            CbxOctaveDown.Size = new Size(131, 24);
-            CbxOctaveDown.TabIndex = 5;
-            CbxOctaveDown.Text = "Lower 1 octave";
-            CbxOctaveDown.UseVisualStyleBackColor = true;
+            CbxTransposeToConcertKey.AutoSize = true;
+            CbxTransposeToConcertKey.Checked = true;
+            CbxTransposeToConcertKey.CheckState = CheckState.Checked;
+            CbxTransposeToConcertKey.Location = new Point(115, 99);
+            CbxTransposeToConcertKey.Name = "CbxTransposeToConcertKey";
+            CbxTransposeToConcertKey.Size = new Size(197, 24);
+            CbxTransposeToConcertKey.TabIndex = 5;
+            CbxTransposeToConcertKey.Text = "Transpose to Concert Key";
+            CbxTransposeToConcertKey.UseVisualStyleBackColor = true;
             // 
             // VoiSolfa
             // 
             AutoScaleDimensions = new SizeF(120F, 120F);
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(802, 142);
-            Controls.Add(CbxOctaveDown);
+            Controls.Add(CbxTransposeToConcertKey);
             Controls.Add(CmbSolfaSetting);
             Controls.Add(LblSolfaSetting);
             Controls.Add(BtnDebug);
@@ -156,6 +158,6 @@
         private SaveFileDialog DlgSaveFile;
         private Label LblSolfaSetting;
         private ComboBox CmbSolfaSetting;
-        private CheckBox CbxOctaveDown;
+        private CheckBox CbxTransposeToConcertKey;
     }
 }
