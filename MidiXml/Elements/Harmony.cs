@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-using System.Reflection;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 
 namespace Developers.MidiXml.Elements
 {

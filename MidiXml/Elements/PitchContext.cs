@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Developers.MidiXml.Elements
+﻿namespace Developers.MidiXml.Elements
 {
     /// <summary>
     /// 音の位置づけ情報
@@ -13,7 +9,7 @@ namespace Developers.MidiXml.Elements
     public class PitchContext
     {
         public int DiatonicIndex { get; init; }
-        public int DiatonicAlter {  get; init; }
+        public int DiatonicAlter { get; init; }
         /// <summary>
         /// 半音階のインデックス(ルート音からの変位(0-based)
         /// </summary>

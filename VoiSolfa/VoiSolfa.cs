@@ -1,6 +1,4 @@
 using Developers.MidiXml;
-using Developers.MidiXml.Elements;
-using System.Diagnostics;
 
 namespace VoiSolfa
 {
@@ -108,7 +106,7 @@ namespace VoiSolfa
                     string OutputFileName = string.Empty;
                     //「ファイル保存」ダイアログの表示
                     this.DlgSaveFile.InitialDirectory = Path.GetDirectoryName(this.TxtXmlPath.Text);
-                    this.DlgSaveFile.FileName =  Path.GetFileNameWithoutExtension(this.TxtXmlPath.Text) + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xml";
+                    this.DlgSaveFile.FileName = Path.GetFileNameWithoutExtension(this.TxtXmlPath.Text) + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xml";
                     this.DlgSaveFile.Filter = "MusixXmlファイル(*.xml;*.musicxml)|*.xml;*.musicxml|すべてのファイル(*.*)|*.*";
                     this.DlgSaveFile.FilterIndex = 1;
                     this.DlgSaveFile.OverwritePrompt = true;

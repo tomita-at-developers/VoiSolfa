@@ -33,7 +33,7 @@ namespace Developers.MidiXml.Configurations
         /// </summary>
         public bool Debug
         {
-            get { return Configs.Debug; } 
+            get { return Configs.Debug; }
         }
 
         /// <summary>

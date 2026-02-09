@@ -1,7 +1,4 @@
-﻿using System.ComponentModel;
-using System.Reflection;
-
-namespace Developers.MidiXml.Elements
+﻿namespace Developers.MidiXml.Elements
 {
     /// <summary>
     /// MusicXmlのElementが持つ基本情報

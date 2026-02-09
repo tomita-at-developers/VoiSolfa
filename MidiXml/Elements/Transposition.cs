@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
-
-namespace Developers.MidiXml.Elements
+﻿namespace Developers.MidiXml.Elements
 {
     /// <summary>
     /// 移調情報クラス
@@ -105,12 +100,12 @@ namespace Developers.MidiXml.Elements
         {
             //移調前の情報保存
             this.OriginalKey = Attributes.Key.Clone();
-            this.OriginalTranspose = Attributes.Transpose.Clone(); 
+            this.OriginalTranspose = Attributes.Transpose.Clone();
             //移調後の情報を生成
             this.TransposedKey = GenerateTransposedKey(this.OriginalKey);
             this.TransposedTranspose = new Transpose(null, 0, 0);
             //移調後のスケールを生成
-           this. ChromaticScale = PitchUtil.CreateChromaticScale(TransposedKey.Signature);
+            this.ChromaticScale = PitchUtil.CreateChromaticScale(TransposedKey.Signature);
         }
 
         #endregion

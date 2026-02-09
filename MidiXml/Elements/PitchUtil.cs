@@ -1,11 +1,4 @@
-﻿using Developers.MidiXml.Elements;
-using System.Diagnostics;
-using System.Diagnostics.Metrics;
-using System.Net.Http.Headers;
-using System.Reflection.PortableExecutable;
-using static Developers.MidiXml.Elements.MidiDefs;
-
-namespace Developers.MidiXml.Elements
+﻿namespace Developers.MidiXml.Elements
 {
     public static class PitchUtil
     {
@@ -160,7 +153,7 @@ namespace Developers.MidiXml.Elements
         {
             int OrigStepIndex = GetCBasedChromaticIndexOfStep(Original.Step);
             int TargStepIndex = GetCBasedChromaticIndexOfStep(Step);
-            int TargAlter  = Original.Alter + (OrigStepIndex - TargStepIndex);
+            int TargAlter = Original.Alter + (OrigStepIndex - TargStepIndex);
             int TargOctave = Original.Octave;
             //大きすぎる場合
             if (TargAlter > 6)
@@ -234,7 +227,7 @@ namespace Developers.MidiXml.Elements
             if ((OriginalMidiNoteNumber + Transposition.OriginalTranspose.Chromatic) != TransposedMidiNoteNumber)
             {
                 throw new Exception(
-                    "TranposePitch() failed to transpopse." + 
+                    "TranposePitch() failed to transpopse." +
                     Source.Step + Source.Octave + "(" + Source.Alter + ")" +
                     " == transpose(" + Transposition.OriginalTranspose.Chromatic + ") ==> " +
                     TargPitch.Step + TargPitch.Octave + "(" + TargPitch.Alter + ")");
@@ -318,28 +311,28 @@ namespace Developers.MidiXml.Elements
         {
             // I
             PitchClass I = Root.Clone();
-            PitchClass Is   = GetEnharmonic(new PitchClass(I.Step, I.Alter +  1), I.Step);
+            PitchClass Is = GetEnharmonic(new PitchClass(I.Step, I.Alter + 1), I.Step);
             // II
-            PitchClass IIf  = GetEnharmonic(new PitchClass(I.Step, I.Alter +  1), GetNextStep(I.Step));
-            PitchClass II   = GetEnharmonic(new PitchClass(I.Step, I.Alter +  2), GetNextStep(I.Step));
-            PitchClass IIs  = GetEnharmonic(new PitchClass(I.Step, I.Alter +  3), GetNextStep(I.Step));
+            PitchClass IIf = GetEnharmonic(new PitchClass(I.Step, I.Alter + 1), GetNextStep(I.Step));
+            PitchClass II = GetEnharmonic(new PitchClass(I.Step, I.Alter + 2), GetNextStep(I.Step));
+            PitchClass IIs = GetEnharmonic(new PitchClass(I.Step, I.Alter + 3), GetNextStep(I.Step));
             // III
-            PitchClass IIIf = GetEnharmonic(new PitchClass(I.Step, I.Alter +  3), GetNextStep(II.Step));
-            PitchClass III  = GetEnharmonic(new PitchClass(I.Step, I.Alter +  4), GetNextStep(II.Step));
+            PitchClass IIIf = GetEnharmonic(new PitchClass(I.Step, I.Alter + 3), GetNextStep(II.Step));
+            PitchClass III = GetEnharmonic(new PitchClass(I.Step, I.Alter + 4), GetNextStep(II.Step));
             // IV
-            PitchClass IV   = GetEnharmonic(new PitchClass(I.Step, I.Alter +  5), GetNextStep(III.Step));
-            PitchClass IVs  = GetEnharmonic(new PitchClass(I.Step, I.Alter +  6), GetNextStep(III.Step));
+            PitchClass IV = GetEnharmonic(new PitchClass(I.Step, I.Alter + 5), GetNextStep(III.Step));
+            PitchClass IVs = GetEnharmonic(new PitchClass(I.Step, I.Alter + 6), GetNextStep(III.Step));
             // V
-            PitchClass Vf   = GetEnharmonic(new PitchClass(I.Step, I.Alter +  6), GetNextStep(IV.Step));
-            PitchClass V    = GetEnharmonic(new PitchClass(I.Step, I.Alter +  7), GetNextStep(IV.Step));
-            PitchClass Vs   = GetEnharmonic(new PitchClass(I.Step, I.Alter +  8), GetNextStep(IV.Step));
+            PitchClass Vf = GetEnharmonic(new PitchClass(I.Step, I.Alter + 6), GetNextStep(IV.Step));
+            PitchClass V = GetEnharmonic(new PitchClass(I.Step, I.Alter + 7), GetNextStep(IV.Step));
+            PitchClass Vs = GetEnharmonic(new PitchClass(I.Step, I.Alter + 8), GetNextStep(IV.Step));
             // VI
-            PitchClass VIf  = GetEnharmonic(new PitchClass(I.Step, I.Alter +  8), GetNextStep(V.Step));
-            PitchClass VI   = GetEnharmonic(new PitchClass(I.Step, I.Alter +  9), GetNextStep(V.Step));
-            PitchClass VIs  = GetEnharmonic(new PitchClass(I.Step, I.Alter + 10), GetNextStep(V.Step));
+            PitchClass VIf = GetEnharmonic(new PitchClass(I.Step, I.Alter + 8), GetNextStep(V.Step));
+            PitchClass VI = GetEnharmonic(new PitchClass(I.Step, I.Alter + 9), GetNextStep(V.Step));
+            PitchClass VIs = GetEnharmonic(new PitchClass(I.Step, I.Alter + 10), GetNextStep(V.Step));
             // VII
             PitchClass VIIf = GetEnharmonic(new PitchClass(I.Step, I.Alter + 10), GetNextStep(VI.Step));
-            PitchClass VII  = GetEnharmonic(new PitchClass(I.Step, I.Alter + 11), GetNextStep(VI.Step));
+            PitchClass VII = GetEnharmonic(new PitchClass(I.Step, I.Alter + 11), GetNextStep(VI.Step));
             //テーブルにセット
             List<List<PitchClass>> RetVal = [
                 [I],
@@ -410,7 +403,7 @@ namespace Developers.MidiXml.Elements
         private static Pitch MidiNoteNumberToPitch(int MidiNoteNumber, bool Flatted = false)
         {
             //オクターブ番号を算出
-            int Octave = (MidiNoteNumber / 12) -1;
+            int Octave = (MidiNoteNumber / 12) - 1;
             //オクターブ内のIndexを算出
             int RawAlter = MidiNoteNumber % 12;
             //オクターブ内のIndexをStepに繰り上げ

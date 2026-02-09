@@ -49,7 +49,7 @@ namespace Developers.MidiXml.Elements
         /// <param name="Mode"></param>
         public Key(XElement? Source, int Fifths, MidiDefs.Mode Mode)
         {
-            this.Source  = Source;
+            this.Source = Source;
             this.Fifths = Fifths;
             this.Mode = Mode;
             //五度圏からステップの変換
@@ -113,7 +113,7 @@ namespace Developers.MidiXml.Elements
         /// <returns></returns>
         public Key Clone()
         {
-            return  new Key(this.Source, this.Fifths, this.Mode);
+            return new Key(this.Source, this.Fifths, this.Mode);
         }
 
         /// <summary>

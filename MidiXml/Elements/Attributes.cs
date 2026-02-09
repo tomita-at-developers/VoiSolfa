@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml.Linq;
-using static Developers.MidiXml.Elements.MidiDefs;
+﻿using System.Xml.Linq;
 
 namespace Developers.MidiXml.Elements
 {
@@ -13,7 +9,7 @@ namespace Developers.MidiXml.Elements
     {
         #region "public properties"
 
-        private XElement? Source {  get; set; } = null;
+        private XElement? Source { get; set; } = null;
         public string MeasureNumber { get; init; } = string.Empty;
         public Key Key { get; init; } = new Key(null, 0, MidiDefs.Mode.Major);
         public Transpose Transpose { get; private set; } = new Transpose(null, 0, 0);

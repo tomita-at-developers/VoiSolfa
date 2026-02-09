@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.Metrics;
-using System.Xml.Linq;
-using static Developers.MidiXml.Elements.MidiDefs;
+﻿using System.Xml.Linq;
 
 namespace Developers.MidiXml.Elements
 {
@@ -227,7 +225,7 @@ namespace Developers.MidiXml.Elements
                 this.Pitch.Transpose(Transposition, this.Analysis!.Context);
                 UpdateXmlPitch();
             }
-}
+        }
 
         /// <summary>
         /// ソルファの取得

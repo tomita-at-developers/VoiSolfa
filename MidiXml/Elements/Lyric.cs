@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Headers;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 
 namespace Developers.MidiXml.Elements
 {

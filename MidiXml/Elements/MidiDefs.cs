@@ -27,7 +27,7 @@ namespace Developers.MidiXml.Elements
         public const int DIATONIC_VI = 5;
         public const int DIATONIC_VII = 7;
 
-         /// <summary>
+        /// <summary>
         /// C-Basedのルート音
         /// </summary>
         public static readonly PitchClass CBasedRoot = new PitchClass(Step.C, ALTER_NATURAL);

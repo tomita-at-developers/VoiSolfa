@@ -1,9 +1,7 @@
 ﻿using Developers.MidiXml.Configurations.Models;
 using Developers.MidiXml.Elements;
-using System;
 using System.Diagnostics;
 using System.Xml.Linq;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Developers.MidiXml
 {
@@ -317,46 +315,46 @@ namespace Developers.MidiXml
                     //コードで判断できるとき
                     if (Chord != null)
                     {
-                    //    //ド#/レbの特例
-                    //    if (ChromaticIndex == 1)
-                    //    {
-                    //        //V|7の場合はシャープ系
-                    //        if (Chord.Root.PitchClass.GetChromaticIndex(Root) == 9 &&
-                    //           (Chord.KindString.StartsWith("dominant")|| (Chord.KindString.StartsWith("major"))))
-                    //        {
-                    //            Reason = "5";
-                    //            Text = Syllables[0];
-                    //        }
-                    //        //I|m7の場合はシャープ系
-                    //        if (Chord.Root.PitchClass.GetChromaticIndex(Root) == 2 &&
-                    //           (Chord.KindString.StartsWith("minor") || (Chord.KindString.StartsWith("major"))))
-                    //        {
-                    //            Reason = "6";
-                    //            Text = Syllables[0];
-                    //        }
-                    //    }
-                    //    //ファ#/ソbの特例
-                    //    if (ChromaticIndex == 8)
-                    //    {
-                    //        //II7の場合はシャープ系
-                    //        if (Chord.Root.PitchClass.GetChromaticIndex(Root) == 2 &&
-                    //           (Chord.KindString.StartsWith("dominant") || (Chord.KindString.StartsWith("major"))))
-                    //        {
-                    //            Reason = "7";
-                    //            Text = Syllables[0];
-                    //        }
-                    //    }
-                    //    //ソ#/ラbの特例
-                    //    if (ChromaticIndex == 8)
-                    //    {
-                    //        //III7の場合はシャープ系
-                    //        if (Chord.Root.PitchClass.GetChromaticIndex(Root) == 4 &&
-                    //           (Chord.KindToString.StartsWith("dominant") || (Chord.KindString.StartsWith("major"))))
-                    //        {
-                    //            Reason = "8";
-                    //            Text = Syllables[0];
-                    //        }
-                    //    }
+                        //    //ド#/レbの特例
+                        //    if (ChromaticIndex == 1)
+                        //    {
+                        //        //V|7の場合はシャープ系
+                        //        if (Chord.Root.PitchClass.GetChromaticIndex(Root) == 9 &&
+                        //           (Chord.KindString.StartsWith("dominant")|| (Chord.KindString.StartsWith("major"))))
+                        //        {
+                        //            Reason = "5";
+                        //            Text = Syllables[0];
+                        //        }
+                        //        //I|m7の場合はシャープ系
+                        //        if (Chord.Root.PitchClass.GetChromaticIndex(Root) == 2 &&
+                        //           (Chord.KindString.StartsWith("minor") || (Chord.KindString.StartsWith("major"))))
+                        //        {
+                        //            Reason = "6";
+                        //            Text = Syllables[0];
+                        //        }
+                        //    }
+                        //    //ファ#/ソbの特例
+                        //    if (ChromaticIndex == 8)
+                        //    {
+                        //        //II7の場合はシャープ系
+                        //        if (Chord.Root.PitchClass.GetChromaticIndex(Root) == 2 &&
+                        //           (Chord.KindString.StartsWith("dominant") || (Chord.KindString.StartsWith("major"))))
+                        //        {
+                        //            Reason = "7";
+                        //            Text = Syllables[0];
+                        //        }
+                        //    }
+                        //    //ソ#/ラbの特例
+                        //    if (ChromaticIndex == 8)
+                        //    {
+                        //        //III7の場合はシャープ系
+                        //        if (Chord.Root.PitchClass.GetChromaticIndex(Root) == 4 &&
+                        //           (Chord.KindToString.StartsWith("dominant") || (Chord.KindString.StartsWith("major"))))
+                        //        {
+                        //            Reason = "8";
+                        //            Text = Syllables[0];
+                        //        }
+                        //    }
                     }
                 }
                 //アナリーゼのセット

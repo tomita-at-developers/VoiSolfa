@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Text;
-using static Developers.MidiXml.Elements.MidiDefs;
-
-namespace Developers.MidiXml.Elements
+﻿namespace Developers.MidiXml.Elements
 {
     /// <summary>
     /// 音程の分析情報
@@ -43,7 +37,7 @@ namespace Developers.MidiXml.Elements
             string Dump = string.Empty;
 
             Dump += "[Analysis]";
-            Dump += "Context.ChromaticIndex=" + this.Context.ChromaticIndex.ToString() +",";
+            Dump += "Context.ChromaticIndex=" + this.Context.ChromaticIndex.ToString() + ",";
             Dump += "Context.EnharmonicIndex=" + this.Context.EnharmonicIndex.ToString() + ",";
             Dump += "Description=" + this.Description;
             return Dump;
