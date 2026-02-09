@@ -72,6 +72,8 @@ namespace Developers.MidiXml
         {
             //ノードリストの初期化
             this.MidiElms = [];
+            //現在支配的な<attributes>
+            Attributes? CurrentAttr = null;
             //Xmlドキュメントの取得
             this.MusicXDocument = XDocument.Load(ImportPath);
             //<measure>のリストを取得(パートは無視)
@@ -84,19 +86,12 @@ namespace Developers.MidiXml
                     //<attributes>
                     if (ElmMeasureContent.Name.LocalName.Equals("attributes"))
                     {
-                        //全ノード検索
-                        foreach (XElement ElmAttributeContent in ElmMeasureContent.Elements())
+                        //<key>を含む場合のみ処理する
+                        if (ElmMeasureContent.Element("key") != null)
                         {
-                            //<key>
-                            if (ElmAttributeContent.Name.LocalName.Equals("key"))
-                            {
-                                MidiElms.Add(new Key(ElmAttributeContent));
-                            }
-                            //<transpose>
-                            else if (ElmAttributeContent.Name.LocalName.Equals("transpose"))
-                            {
-                                MidiElms.Add(new Transpose(ElmAttributeContent));
-                            }
+                            Attributes Attr = new Attributes(ElmMeasureContent);
+                            CurrentAttr = Attr.Clone();
+                            MidiElms.Add(Attr);
                         }
                     }
                     //<harmony>
@@ -114,7 +109,7 @@ namespace Developers.MidiXml
             //アナリーゼを実行
             Analyze();
             //デバック出力
-            DebugPrint();
+            DebugPrint("********** Import **********");
         }
 
         /// <summary>
@@ -124,7 +119,7 @@ namespace Developers.MidiXml
         public void XmlExport(string ExportPath)
         {
             //デバック出力
-            DebugPrint();
+            DebugPrint("********** Export **********");
             //XMLファイルの保存
             MusicXDocument?.Save(ExportPath);
         }
@@ -148,6 +143,8 @@ namespace Developers.MidiXml
                     ((Note)MidiElms[i]).SetLyrics(this.SolfaLyrics, Configs.Debug);
                 }
             }
+            //デバック出力
+            DebugPrint("********** CreateLyrics **********");
         }
 
         /// <summary>
@@ -155,58 +152,44 @@ namespace Developers.MidiXml
         /// </summary>
         public void TransposeToConcerKey()
         {
-            //現在のキー(初期値はC-Major)
-            Key OriginalKey = new Key(null, 0, MidiDefs.Mode.Major);
-            //現在の移調(初期値は移調ナシ)
-            Transpose OriginalTranspose = new Transpose(null, 0, 0);
-            //移調後のキー
-            Key? TransposedKey = null;
-            //移調後の移調(初期値は移調ナシ)
-            Transpose? TransposedTranspose = null;
+            //移調情報
+            Transposition? TransposeInfo = null;
             //転調ループ
             for (int i = 0; i < MidiElms.Count; i++)
             {
                 //キーの移調
-                if (MidiElms[i].GetType() == typeof(Key))
+                if (MidiElms[i].GetType() == typeof(Attributes))
                 {
-                    //キャスト
-                    Key Key = (Key)MidiElms[i];
-                    //オリジナルのキー情報を保存
-                    OriginalKey = Key.Clone();
-                    //キー情報を更新
-                    Key.TransposeToConcertKey();
-                    //移調後のキー情報を保存
-                    TransposedKey = Key.Clone();
-                }
-                //移調の更新
-                else if (MidiElms[i].GetType() == typeof(Transpose))
-                {
-                    //キャスト
-                    Transpose Transpose = (Transpose)MidiElms[i];
-                    //オリジナルの移調情報を保存
-                    OriginalTranspose = Transpose.Clone();
-                    //移調情報を更新
-                    Transpose.TransposeToConcertKey();
-                    //移調後のキー情報を保存
-                    TransposedTranspose = Transpose.Clone();
-
+                    //移調情報を作成する
+                    Attributes Attr = (Attributes)MidiElms[i];
+                    TransposeInfo = new Transposition(Attr);
+                    //移調する
+                    Attr.TransposeToConcertKey(TransposeInfo);
                 }
                 //コードの移調
                 else if (MidiElms[i].GetType() == typeof(Harmony))
                 {
-                    ((Harmony)MidiElms[i]).TransposeToConcertKey(OriginalKey);
+                    if (TransposeInfo != null)
+                    {
+                        ((Harmony)MidiElms[i]).Transpose(TransposeInfo);
+                    }
                 }
                 //音符の移調
                 else if (MidiElms[i].GetType() == typeof(Note))
                 {
-                    ((Note)MidiElms[i]).TransposeToConcertKey(OriginalKey);
+                    if (TransposeInfo != null)
+                    {
+                        ((Note)MidiElms[i]).Transpose(TransposeInfo);
+                    }
                 }
             }
+            //デバック出力
+            DebugPrint("********** TransposeToConcertKey **********");
         }
 
         #endregion
 
-        #region "private nethods"
+        #region "private methods"
 
         /// <summary>
         /// MidiElmsの音楽的解析(NoteとHarmony)
@@ -215,18 +198,21 @@ namespace Developers.MidiXml
         {
             //現在のキー(初期値はC-Major)
             Key CurrentKey = new Key(null, 0, MidiDefs.Mode.Minor);
-            //現在の移調(初期値は移調ナシ)
-            Transpose CUrrentTranspose = new Transpose(null, 0, 0);
             //現在のコード(初期値はnull)
             Harmony? CurrentChord = null;
             //解析ループ
             for (int i = 0; i < MidiElms.Count; i++)
             {
-                //キー
-                if (MidiElms[i].GetType() == typeof(Key))
+                //キーの移調
+                if (MidiElms[i].GetType() == typeof(Attributes))
                 {
+                    //キャスト
+                    Attributes Attr = (Attributes)MidiElms[i];
                     //キーの保存
-                    CurrentKey = (Key)MidiElms[i];
+                    if (Attr.Key != null)
+                    {
+                        CurrentKey = Attr.Key;
+                    }
                 }
                 //コード
                 else if (MidiElms[i].GetType() == typeof(Harmony))
@@ -278,7 +264,7 @@ namespace Developers.MidiXml
                 //【自Note】のクロマチックインデックスの取得
                 int ChromaticIndex = Note.Pitch!.GetChromaticIndex(Key.Signature);
                 //デフォルトはナチュラル(シャープと同じ位置)
-                int Enharmonics = SHARP;
+                int EnharmonicsIndex = SHARP;
                 string Reason = string.Empty;
                 //同音異名があるとき
                 if (PitchUtil.CBasedChromaticScale[ChromaticIndex].Count == 2)
@@ -286,51 +272,51 @@ namespace Developers.MidiXml
                     //もともとシャープ表現ならシャープ表現
                     if (Note.Pitch.Alter > 0)
                     {
-                        if (Enharmonics != SHARP)
+                        if (EnharmonicsIndex != SHARP)
                         {
                             Reason = "1";
-                            Enharmonics = SHARP;
+                            EnharmonicsIndex = SHARP;
                         }
                     }
                     //もともとフラット表現ならフラット表現
                     if (Note.Pitch.Alter < 0)
                     {
-                        if (Enharmonics != FLAT)
+                        if (EnharmonicsIndex != FLAT)
                         {
                             Reason = "2";
-                            Enharmonics = FLAT;
+                            EnharmonicsIndex = FLAT;
                         }
                     }
                     //シャープ系キーのナチュラル表現はフラット表現
                     if (Key.Fifths > 0 && Note.Pitch.Alter == 0)
                     {
-                        if (Enharmonics != FLAT)
+                        if (EnharmonicsIndex != FLAT)
                         {
                             Reason = "3";
-                            Enharmonics = FLAT;
+                            EnharmonicsIndex = FLAT;
                         }
                     }
                     //フラット系キーのナチュラル表現はシャープ表現
                     if (Key.Fifths < 0 && Note.Pitch.Alter == 0)
                     {
-                        if (Enharmonics != SHARP)
+                        if (EnharmonicsIndex != SHARP)
                         {
                             Reason = "4";
-                            Enharmonics = SHARP;
+                            EnharmonicsIndex = SHARP;
                         }
                     }
                     //次の音が半音上でダイアトニック音の場合ははシャープ表現
                     if (NextNote != null && NextCromaticIndex == ChromaticIndex + 1 && this.SolfaLyrics[NextCromaticIndex].Count == 1)
                     {
-                        if (Enharmonics != SHARP)
+                        if (EnharmonicsIndex != SHARP)
                         {
                             Reason = "5";
-                            Enharmonics = SHARP;
+                            EnharmonicsIndex = SHARP;
                         }
                     }
-                    ////コードで判断できるとき
-                    //if (Chord != null)
-                    //{
+                    //コードで判断できるとき
+                    if (Chord != null)
+                    {
                     //    //ド#/レbの特例
                     //    if (ChromaticIndex == 1)
                     //    {
@@ -371,10 +357,10 @@ namespace Developers.MidiXml
                     //            Text = Syllables[0];
                     //        }
                     //    }
-                    //}
+                    }
                 }
                 //アナリーゼのセット
-                Note.Analysis = new Analysis(ChromaticIndex, Enharmonics, Reason);
+                Note.Analysis = new Analysis(ChromaticIndex, EnharmonicsIndex, Reason);
             }
         }
 
@@ -407,7 +393,7 @@ namespace Developers.MidiXml
             //【自Harmony】のクロマチックインデックスの取得
             int ChromaticIndex = Harmony.Root.PitchClass.GetChromaticIndex(Key.Signature);
             //デフォルトはナチュラル(シャープと同じ位置)
-            int Enharmonics = SHARP;
+            int EnharmonicIndex = SHARP;
             string Reason = string.Empty;
             //同音異名があるとき
             if (PitchUtil.CBasedChromaticScale[ChromaticIndex].Count == 2)
@@ -415,51 +401,51 @@ namespace Developers.MidiXml
                 //もともとシャープ表現ならシャープ表現
                 if (Harmony.Root.PitchClass.Alter > 0)
                 {
-                    if (Enharmonics != SHARP)
+                    if (EnharmonicIndex != SHARP)
                     {
                         Reason = "1";
-                        Enharmonics = SHARP;
+                        EnharmonicIndex = SHARP;
                     }
                 }
                 //もともとフラット表現ならフラット表現
                 if (Harmony.Root.PitchClass.Alter < 0)
                 {
-                    if (Enharmonics != FLAT)
+                    if (EnharmonicIndex != FLAT)
                     {
                         Reason = "2";
-                        Enharmonics = FLAT;
+                        EnharmonicIndex = FLAT;
                     }
                 }
                 //シャープ系キーのナチュラル表現はフラット表現
                 if (Key.Fifths > 0 && Harmony.Root.PitchClass.Alter == 0)
                 {
-                    if (Enharmonics != FLAT)
+                    if (EnharmonicIndex != FLAT)
                     {
                         Reason = "3";
-                        Enharmonics = FLAT;
+                        EnharmonicIndex = FLAT;
                     }
                 }
                 //フラット系キーのナチュラル表現はシャープ表現
                 if (Key.Fifths < 0 && Harmony.Root.PitchClass.Alter == 0)
                 {
-                    if (Enharmonics != SHARP)
+                    if (EnharmonicIndex != SHARP)
                     {
                         Reason = "4";
-                        Enharmonics = SHARP;
+                        EnharmonicIndex = SHARP;
                     }
                 }
                 //次の音が半音上でダイアトニック音の場合ははシャープ表現
                 if (NextHarmony != null && NextCromaticIndex == ChromaticIndex + 1 && this.SolfaLyrics[NextCromaticIndex].Count == 1)
                 {
-                    if (Enharmonics != SHARP)
+                    if (EnharmonicIndex != SHARP)
                     {
                         Reason = "5";
-                        Enharmonics = SHARP;
+                        EnharmonicIndex = SHARP;
                     }
                 }
             }
             //アナリーゼのセット
-            Harmony.Analysis = new Analysis(ChromaticIndex, Enharmonics, Reason);
+            Harmony.Analysis = new Analysis(ChromaticIndex, EnharmonicIndex, Reason);
         }
 
         /// <summary>
@@ -602,8 +588,12 @@ namespace Developers.MidiXml
         /// <summary>
         /// デバック用のダンプ出力
         /// </summary>
-        private void DebugPrint()
+        private void DebugPrint(string Separetor)
         {
+            if (!string.IsNullOrEmpty(Separetor))
+            {
+                Debug.Print(Separetor);
+            }
             //デバック出力
             foreach (MidiElement node in MidiElms)
             {

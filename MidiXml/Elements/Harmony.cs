@@ -11,6 +11,9 @@ namespace Developers.MidiXml.Elements
     {
         #region "public properties"
 
+        /// このインスタンスに対応するXElement
+        /// </summary>
+        public XElement Source { get; init; }
         public Root Root { get; init; } = new Root(MidiDefs.Step.C, MidiDefs.ALTER_NATURAL);
         public MidiDefs.Kind Kind { get; init; } = MidiDefs.Kind.None;
         public List<Degree> Degrees { get; init; } = [];
@@ -18,7 +21,7 @@ namespace Developers.MidiXml.Elements
         {
             get
             {
-                return GetXmlString(this.Kind);
+                return MidiDefs.GetEnumDescription(this.Kind);
             }
         }
         public Analysis? Analysis { get; set; } = null!;
@@ -38,6 +41,8 @@ namespace Developers.MidiXml.Elements
             XElement? ElmKind = Source.Element("kind");
             IEnumerable<XElement> ElmDegrees = Source.Elements("degree");
 
+            //ノード保存
+            this.Source = Source;
             //<root>
             if (ElmRoot != null)
             {
@@ -72,12 +77,33 @@ namespace Developers.MidiXml.Elements
         #region "public methods"
 
         /// <summary>
-        /// 移調楽器向けの記述をコンサートキーでの記述に変更
+        /// トランスポーズ
         /// </summary>
-        /// <param name="Key"></param>
-        public void TransposeToConcertKey(Key Key)
+        /// <param name="Transposition"></param>
+        public void Transpose(Transposition Transposition)
         {
+            //移調してXDocumentに反映
+            this.Root.Transpose(Transposition, this.Analysis!.Context);
+            UpdateXmlRoot();
+        }
 
+        #endregion
+
+        #region "private methods"
+
+        /// <summary>
+        /// rootの更新
+        /// </summary>
+        private void UpdateXmlRoot()
+        {
+            //XDocumentに<pitch>が存在する場合のみ処理する
+            XElement? RootElm = Source.Element("root");
+            if (RootElm != null)
+            {
+                //一旦削除して追加
+                RootElm.Remove();
+                Source.Add(this.Root!.Serialize());
+            }
         }
 
         #endregion

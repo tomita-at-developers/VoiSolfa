@@ -218,22 +218,16 @@ namespace Developers.MidiXml.Elements
         /// <summary>
         /// トランスポーズ
         /// </summary>
-        /// <param name="OrigKey"></param>
-        /// <param name="TargKey"></param>
-        /// <param name="AlterOctave"></param>
-        public void TransposeToConcertKey(Key Key)
+        /// <param name="Transposition"></param>
+        public void Transpose(Transposition Transposition)
         {
             //Pitchがあるときのみ処理(休符はスルー)
             if (Pitch != null)
             {
-                ////移調記述されている場合はコンサートキーに変更
-                //if (Key.TransposeChromatic != 0)
-                //{
-                //    this.Pitch.TransposeToConcertKey(Key);
-                //    UpdateXmlPitch();
-                //}
+                this.Pitch.Transpose(Transposition, this.Analysis!.Context);
+                UpdateXmlPitch();
             }
-        }
+}
 
         /// <summary>
         /// ソルファの取得
@@ -248,7 +242,7 @@ namespace Developers.MidiXml.Elements
             {
                 Lyric? Lyric = null;
                 //歌詞文字列の取得
-                string Text = SolfaLyrics[this.Analysis!.ChromaticIndex][this.Analysis!.EnharmonicIndex];
+                string Text = SolfaLyrics[this.Analysis!.Context.ChromaticIndex][this.Analysis!.Context.EnharmonicIndex];
                 //デバック時はDescriptionを追記
                 Text += Debug ? this.Analysis!.Description : string.Empty;
 
@@ -292,20 +286,6 @@ namespace Developers.MidiXml.Elements
             UpdateXmlLyrics();
         }
 
-        ///// <summary>
-        ///// オクターブ変更
-        ///// </summary>
-        ///// <param name="Alter"></param>
-        //public void AlterXmlOctave(int Alter)
-        //{
-        //    //Pitchがあるときのみ処理(休符はスルー)
-        //    if (Pitch != null)
-        //    {
-        //        this.Pitch.AlterOctave(Alter);
-        //        UpdateXmlPitch();
-        //    }
-        //}
-
         #endregion
 
         #region "private methods"
@@ -315,14 +295,13 @@ namespace Developers.MidiXml.Elements
         /// </summary>
         private void UpdateXmlPitch()
         {
+            //XDocumentに<pitch>が存在する場合のみ処理する
             XElement? PitchElm = Source.Element("pitch");
             if (PitchElm != null)
             {
+                //一旦削除して追加
                 PitchElm.Remove();
-                if (this.Pitch != null)
-                {
-                    Source.Add(this.Pitch.Serialize());
-                }
+                Source.Add(this.Pitch!.Serialize());
             }
         }
 
@@ -347,7 +326,7 @@ namespace Developers.MidiXml.Elements
 
         #endregion
 
-        #region "public methods"
+        #region "debug methods"
 
         /// <summary>
         /// デバック用ダンプ
@@ -357,7 +336,7 @@ namespace Developers.MidiXml.Elements
         {
             string Dump = string.Empty;
 
-            Dump += "<note>";
+            Dump += "<note>(measure=" + this.MeasureNumber + ")";
             Dump += Pitch != null ? Pitch.DebugDump() : "";
             Dump += Rest ? "<rest/>" : "";
             Dump += Duration != null ? "<duration>" + Duration.ToString() : "";

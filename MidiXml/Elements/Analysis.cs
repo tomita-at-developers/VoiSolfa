@@ -18,14 +18,7 @@ namespace Developers.MidiXml.Elements
     {
         #region "public properties"
 
-        /// <summary>
-        /// 半音階インデックス
-        /// </summary>
-        public int ChromaticIndex { get; set; } = ChromaticIndex;
-        /// <summary>
-        /// 同音異名インデックス
-        /// </summary>
-        public int EnharmonicIndex { get; set; } = EnharmonicIndex;
+        public PitchContext Context { get; set; } = new PitchContext(ChromaticIndex, EnharmonicIndex);
         /// <summary>
         /// アナリーゼのメモ
         /// </summary>
@@ -50,8 +43,8 @@ namespace Developers.MidiXml.Elements
             string Dump = string.Empty;
 
             Dump += "[Analysis]";
-            Dump += "ChromaticIndex=" + this.ChromaticIndex.ToString() +",";
-            Dump += "EnharmonicIndex=" + this.EnharmonicIndex.ToString() + ",";
+            Dump += "Context.ChromaticIndex=" + this.Context.ChromaticIndex.ToString() +",";
+            Dump += "Context.EnharmonicIndex=" + this.Context.EnharmonicIndex.ToString() + ",";
             Dump += "Description=" + this.Description;
             return Dump;
         }

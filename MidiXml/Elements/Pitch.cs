@@ -31,20 +31,7 @@ namespace Developers.MidiXml.Elements
                 return new PitchClass(this.Step, this.Alter);
             }
         }
-        /// <summary>
-        /// Stepに対して冗長なAlterを短縮したPitch
-        /// </summary>
-        public Pitch SimplePitch
-        {
-            get
-            {
-                MidiDefs.Step TempStep = this.Step;
-                int TempOctave = this.Octave;
-                int TempAlter = this.Alter;
-                PitchUtil.AdjustToSimplePitch(ref TempStep, ref TempOctave, ref TempAlter);
-                return new Pitch(TempStep, TempOctave, TempAlter);
-            }
-        }
+
         #endregion
 
         #region "constructors"
@@ -187,37 +174,6 @@ namespace Developers.MidiXml.Elements
         }
 
         /// <summary>
-        /// XElementにシリアライズ
-        /// </summary>
-        /// <param name="Alter"></param>
-        public XElement Serialize()
-        {
-            XElement RetVal = new XElement("pitch");
-            RetVal.Add(new XElement("<step>", this.Step));
-            RetVal.Add(new XElement("<alter>", this.Alter));
-            RetVal.Add(new XElement("<octave>", this.Octave));
-            return RetVal;
-        }
-
-        /// <summary>
-        /// 移調楽器向けの記述をコンサートキーでの記述に変更
-        /// </summary>
-        /// <param name="Key"></param>
-        public void TransposeToConcertKey(Key Key)
-        {
-
-        }
-
-        /// <summary>
-        /// オクターブ変更
-        /// </summary>
-        /// <param name="Alter"></param>
-        public void AlterOctave(int Alter)
-        {
-            this.Octave += Alter;
-        }
-
-        /// <summary>
         /// ルート音を指定してクロマチックインデックスを取得する
         /// </summary>
         /// <param name="Root">ルート音</param>
@@ -228,14 +184,36 @@ namespace Developers.MidiXml.Elements
         }
 
         /// <summary>
-        /// 半音操作した新しいPitchの取得
+        /// トランスポーズ
+        /// </summary>
+        /// <param name="Transposition"></param>
+        public void Transpose(Transposition Transposition, PitchContext Context)
+        {
+            //Pitchの移調
+            Pitch Transposed = PitchUtil.TransposePitch(this, Transposition, Context);
+            //移調の適用
+            this.Step = Transposed.Step;
+            this.Octave = Transposed.Octave;
+            this.Alter = Transposed.Alter;
+
+        }
+
+        /// <summary>
+        /// XElementにシリアライズ
         /// </summary>
         /// <param name="Alter"></param>
-        /// <returns></returns>
-        public Pitch GetAlteredPitch(int Alter)
+        public XElement Serialize()
         {
-            return PitchUtil.GetAlteredPitch(this, Alter);
+            XElement RetVal = new XElement("pitch");
+            RetVal.Add(new XElement("step", this.Step));
+            RetVal.Add(new XElement("alter", this.Alter));
+            RetVal.Add(new XElement("octave", this.Octave));
+            return RetVal;
         }
+
+        #endregion
+
+        #region "private methods"
 
         #endregion
 

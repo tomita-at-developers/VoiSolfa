@@ -52,7 +52,7 @@ namespace VoiSolfa
             try
             {
                 //「ファイルを開く」ダイアログの表示
-                this.DlgOpenFile.Filter = "MusixXmlファイル(*.xml;*.musicxml)|*.xml;*.musicxml|すべてのファイル(*.*)|*.*";
+                this.DlgOpenFile.Filter = "MusixXmlファイル(非圧縮)(*.xml;*.musicxml)|*.xml;*.musicxml|すべてのファイル(*.*)|*.*";
                 this.DlgOpenFile.FilterIndex = 1;
                 this.DlgOpenFile.CheckFileExists = true;
                 this.DlgOpenFile.CheckPathExists = true;
@@ -163,83 +163,134 @@ namespace VoiSolfa
         private void BtnDebug_Click(object sender, EventArgs e)
         {
             //DebugPitchClassTester();
-            DebugPitchTester();
+            //DebugPitchTester();
             //DebugPitchCalc00();
             //DebugPitchCalc01();
+            //DebugCreateScale();
+            //DebugPitchToNumber();
         }
 
-        private void DebugPitchClassTester()
-        {
-            PitchClass Sample00 = new PitchClass(MidiDefs.Step.C, 1);
-            PitchClass Sample01 = new PitchClass(MidiDefs.Step.C, 2);
-            Debug.Print("");
-        }
+        //private void DebugPitchClassTester()
+        //{
+        //    PitchClass Sample00 = new PitchClass(MidiDefs.Step.C, 1);
+        //    PitchClass Sample01 = new PitchClass(MidiDefs.Step.C, 2);
+        //    Debug.Print("");
+        //}
 
-        private void DebugPitchCalc00()
-        {
-            int p0 = PitchUtil.DebugGetCBasedChromaticIndex(MidiDefs.Step.C, 0);
-            int p1 = PitchUtil.DebugGetCBasedChromaticIndex(MidiDefs.Step.C, -1);
-            int p2 = PitchUtil.DebugGetCBasedChromaticIndex(MidiDefs.Step.D, -1);
-            int p3 = PitchUtil.DebugGetCBasedChromaticIndex(MidiDefs.Step.D, -3);
-            Debug.Print("");
-        }
-        private void DebugPitchCalc01()
-        {
-            MidiDefs.Step Step;
-            int Octave;
-            int Alter;
+        //private void DebugPitchCalc00()
+        //{
+        //    int p0 = PitchUtil.DebugGetCBasedChromaticIndex(MidiDefs.Step.C, 0);
+        //    int p1 = PitchUtil.DebugGetCBasedChromaticIndex(MidiDefs.Step.C, -1);
+        //    int p2 = PitchUtil.DebugGetCBasedChromaticIndex(MidiDefs.Step.D, -1);
+        //    int p3 = PitchUtil.DebugGetCBasedChromaticIndex(MidiDefs.Step.D, -3);
+        //    Debug.Print("");
+        //}
+        //private void DebugPitchCalc01()
+        //{
+        //    MidiDefs.Step Step;
+        //    int Octave;
+        //    int Alter;
 
-            Step = MidiDefs.Step.F;
-            Octave = 4;
-            Alter = -1;
-            PitchUtil.AdjustToSimplePitch(ref Step, ref Octave, ref Alter);
-            Step = MidiDefs.Step.F;
-            Octave = 4;
-            Alter = 2;
-            PitchUtil.AdjustToSimplePitch(ref Step, ref Octave, ref Alter);
-            Step = MidiDefs.Step.E;
-            Octave = 4;
-            Alter = 1;
-            PitchUtil.AdjustToSimplePitch(ref Step, ref Octave, ref Alter);
-            Step = MidiDefs.Step.E;
-            Octave = 4;
-            Alter = 13;
-            PitchUtil.AdjustToSimplePitch(ref Step, ref Octave, ref Alter);
-            Step = MidiDefs.Step.B;
-            Octave = 3;
-            Alter = 1;
-            PitchUtil.AdjustToSimplePitch(ref Step, ref Octave, ref Alter);
-            Step = MidiDefs.Step.C;
-            Octave = 4;
-            Alter = 0;
-            PitchUtil.AdjustToSimplePitch(ref Step, ref Octave, ref Alter);
+        //    Step = MidiDefs.Step.F;
+        //    Octave = 4;
+        //    Alter = -1;
+        //    PitchUtil.DebugAdjustToSimplePitch(ref Step, ref Octave, ref Alter);
+        //    Step = MidiDefs.Step.F;
+        //    Octave = 4;
+        //    Alter = 2;
+        //    PitchUtil.DebugAdjustToSimplePitch(ref Step, ref Octave, ref Alter);
+        //    Step = MidiDefs.Step.E;
+        //    Octave = 4;
+        //    Alter = 1;
+        //    PitchUtil.DebugAdjustToSimplePitch(ref Step, ref Octave, ref Alter);
+        //    Step = MidiDefs.Step.E;
+        //    Octave = 4;
+        //    Alter = 13;
+        //    PitchUtil.DebugAdjustToSimplePitch(ref Step, ref Octave, ref Alter);
+        //    Step = MidiDefs.Step.B;
+        //    Octave = 3;
+        //    Alter = 1;
+        //    PitchUtil.DebugAdjustToSimplePitch(ref Step, ref Octave, ref Alter);
+        //    Step = MidiDefs.Step.C;
+        //    Octave = 4;
+        //    Alter = 0;
+        //    PitchUtil.DebugAdjustToSimplePitch(ref Step, ref Octave, ref Alter);
 
-            Step = MidiDefs.Step.C;
-            Octave = 4;
-            Alter = -1;
-            PitchUtil.AdjustToSimplePitch(ref Step, ref Octave, ref Alter);
+        //    Step = MidiDefs.Step.C;
+        //    Octave = 4;
+        //    Alter = -1;
+        //    PitchUtil.DebugAdjustToSimplePitch(ref Step, ref Octave, ref Alter);
 
-            Step = MidiDefs.Step.D;
-            Octave = 4;
-            Alter = -1;
-            PitchUtil.AdjustToSimplePitch(ref Step, ref Octave, ref Alter);
+        //    Step = MidiDefs.Step.D;
+        //    Octave = 4;
+        //    Alter = -1;
+        //    PitchUtil.DebugAdjustToSimplePitch(ref Step, ref Octave, ref Alter);
 
-            Step = MidiDefs.Step.D;
-            Octave = 4;
-            Alter = -3;
-            PitchUtil.AdjustToSimplePitch(ref Step, ref Octave, ref Alter);
+        //    Step = MidiDefs.Step.D;
+        //    Octave = 4;
+        //    Alter = -3;
+        //    PitchUtil.DebugAdjustToSimplePitch(ref Step, ref Octave, ref Alter);
 
-            Debug.Print("");
-        }
+        //    Debug.Print("");
+        //}
 
-        private void DebugPitchTester()
-        {
-            Pitch Sample00 = new Pitch(MidiDefs.Step.C, MidiDefs.OCTAVE_CENTER, 1);
-            Pitch Sample01 = new Pitch(MidiDefs.Step.C, MidiDefs.OCTAVE_CENTER, 2);
-            Pitch Sample02 = new Pitch(MidiDefs.Step.D, MidiDefs.OCTAVE_CENTER, -3);
-            Debug.Print("");
-        }
+        //private void DebugPitchTester()
+        //{
+        //    Pitch Sample00 = new Pitch(MidiDefs.Step.C, MidiDefs.OCTAVE_CENTER, 1);
+        //    Pitch Sample01 = new Pitch(MidiDefs.Step.C, MidiDefs.OCTAVE_CENTER, 2);
+        //    Pitch Sample02 = new Pitch(MidiDefs.Step.D, MidiDefs.OCTAVE_CENTER, -3);
+        //    Debug.Print("");
+        //}
+
+        //private void DebugPitchToNumber()
+        //{
+        //    List<Pitch> TestData = [
+        //        new Pitch(MidiDefs.Step.B, 5,0),
+        //        new Pitch(MidiDefs.Step.A, 5,0),
+        //        new Pitch(MidiDefs.Step.G, 5,0),
+        //        new Pitch(MidiDefs.Step.F, 5,0),
+        //        new Pitch(MidiDefs.Step.E, 5,0),
+        //        new Pitch(MidiDefs.Step.D, 5,0),
+        //        new Pitch(MidiDefs.Step.C, 5,0),
+        //        new Pitch(MidiDefs.Step.B, 4,0),
+        //        new Pitch(MidiDefs.Step.A, 4,0),
+        //        new Pitch(MidiDefs.Step.G, 4,0),
+        //        new Pitch(MidiDefs.Step.F, 4,0),
+        //        new Pitch(MidiDefs.Step.E, 4,0),
+        //        new Pitch(MidiDefs.Step.D, 4,0),
+        //        new Pitch(MidiDefs.Step.C, 4,0),
+        //        new Pitch(MidiDefs.Step.B, 3,0),
+        //        new Pitch(MidiDefs.Step.A, 3,0),
+        //        new Pitch(MidiDefs.Step.G, 3,0),
+        //        new Pitch(MidiDefs.Step.F, 3,0),
+        //        new Pitch(MidiDefs.Step.E, 3,0),
+        //        new Pitch(MidiDefs.Step.D, 3,0),
+        //        new Pitch(MidiDefs.Step.C, 3,0),
+        //        new Pitch(MidiDefs.Step.B, 2,0),
+        //        new Pitch(MidiDefs.Step.A, 2,0),
+        //        new Pitch(MidiDefs.Step.G, 2,0),
+        //        new Pitch(MidiDefs.Step.F, 2,0),
+        //        new Pitch(MidiDefs.Step.E, 2,0),
+        //        new Pitch(MidiDefs.Step.D, 2,0),
+        //        new Pitch(MidiDefs.Step.C, 2,0),
+        //    ];
+        //    foreach (Pitch SoutcePitch in TestData)
+        //    {
+        //        int NoteNumber = PitchUtil.DebugPitchToMidiNoteNumber(SoutcePitch);
+        //        Pitch Pitch = PitchUtil.DebugMidiNoteNumberToPitch(NoteNumber);
+        //        Debug.Print(
+        //            SoutcePitch.Step.ToString() + SoutcePitch.Octave.ToString() + "(" + SoutcePitch.Alter + ") => "
+        //            + NoteNumber.ToString() + " => "
+        //            + Pitch.Step.ToString() + Pitch.Octave.ToString() + "(" + SoutcePitch.Alter + ")");
+        //    }
+        //}
 
 
+        //private void DebugCreateScale()
+        //{
+        //    PitchClass Bb = new PitchClass(MidiDefs.Step.B, -1);
+        //    List<List<PitchClass>> Scale = PitchUtil.CreateChromaticScale(Bb);
+        //    Debug.Print("");
+        //}
     }
 }

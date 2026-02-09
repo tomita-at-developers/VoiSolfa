@@ -86,20 +86,18 @@ namespace Developers.MidiXml.Elements
         /// <returns></returns>
         public Transpose Clone()
         {
-            return (Transpose)this.MemberwiseClone();
+            return new Transpose(this.Source, this.Diatonic, this.Chromatic);
         }
 
         /// <summary>
-        /// コンサートキーへ移調(削除ではなく0に更新
+        /// トランスポーズ情報の更新
         /// </summary>
-        public void TransposeToConcertKey()
+        /// <param name="Transposition"></param>
+        public void UpdateTranspose(Transposition Transposition)
         {
             //移調なしに更新
-            if (this.Diatonic != null)
-            {
-                this.Diatonic = 0;
-            }
-            this.Chromatic = 0;
+            this.Diatonic = Transposition.TransposedTranspose.Diatonic;
+            this.Chromatic = Transposition.TransposedTranspose.Chromatic;
             //XDocumentに反映
             UpdateXml();
         }
@@ -111,14 +109,12 @@ namespace Developers.MidiXml.Elements
         /// <summary>
         /// XDocumentへの反映
         /// </summary>
+        /// <exception cref="NullReferenceException"></exception>
         private void UpdateXml()
         {
             if (this.Source != null)
             {
-                if (this.Diatonic != null)
-                {
-                    this.Source.SetElementValue("diatonic", this.Diatonic.ToString());
-                }
+                this.Source.SetElementValue("diatonic", this.Diatonic.ToString());
                 this.Source.SetElementValue("chromatic", this.Chromatic.ToString());
             }
             else
@@ -141,7 +137,7 @@ namespace Developers.MidiXml.Elements
 
             Dump += "<transpose>";
             Dump += "<diatonic>" + Diatonic.ToString();
-            Dump += "<crhomatic>" + Chromatic.ToString();
+            Dump += "<chromatic>" + Chromatic.ToString();
             return Dump;
         }
 

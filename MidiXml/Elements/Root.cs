@@ -12,11 +12,11 @@ namespace Developers.MidiXml.Elements
         /// <summary>
         /// ステップ(オリジナル)
         /// </summary>
-        public MidiDefs.Step Step { get; init; } = MidiDefs.Step.C;
+        public MidiDefs.Step Step { get; private set; } = MidiDefs.Step.C;
         /// <summary>
         /// 半音操作(オリジナル)
         /// </summary>
-        public int Alter { get; init; } = MidiDefs.ALTER_NATURAL;
+        public int Alter { get; private set; } = MidiDefs.ALTER_NATURAL;
         /// <summary>
         /// PitchClassインスタンスで表現されたRoot情報
         /// </summary>
@@ -82,6 +82,35 @@ namespace Developers.MidiXml.Elements
                 //任意データのセット
                 this.Alter = RawAlterInt;
             }
+        }
+
+        #endregion
+
+        #region "public methods"
+
+        /// <summary>
+        /// トランスポーズ
+        /// </summary>
+        /// <param name="Transposition"></param>
+        public void Transpose(Transposition Transposition, PitchContext Context)
+        {
+            //ルート音の移調
+            PitchClass Transposed = PitchUtil.TransposePitchClass(this.PitchClass, Transposition, Context);
+            //移調の適用
+            this.Step = Transposed.Step;
+            this.Alter = Transposed.Alter;
+        }
+
+        /// <summary>
+        /// XElementにシリアライズ
+        /// </summary>
+        /// <param name="Alter"></param>
+        public XElement Serialize()
+        {
+            XElement RetVal = new XElement("root");
+            RetVal.Add(new XElement("root-step", this.Step));
+            RetVal.Add(new XElement("root-alter", this.Alter));
+            return RetVal;
         }
 
         #endregion

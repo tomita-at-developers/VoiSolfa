@@ -20,7 +20,7 @@ namespace Developers.MidiXml.Elements
                 string RetVal = string.Empty;
                 if (Syllabic != null)
                 {
-                    RetVal = GetXmlString(this.Syllabic);
+                    RetVal = MidiDefs.GetEnumDescription(this.Syllabic);
                 }
                 return RetVal;
             }

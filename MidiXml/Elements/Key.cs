@@ -1,4 +1,5 @@
 ﻿using System.Xml.Linq;
+using static Developers.MidiXml.Elements.MidiDefs;
 
 namespace Developers.MidiXml.Elements
 {
@@ -16,15 +17,25 @@ namespace Developers.MidiXml.Elements
         /// <summary>
         /// ５度圏指定
         /// </summary>
-        public int Fifths { get; init; } = 0;
+        public int Fifths { get; private set; } = 0;
         /// <summary>
         /// コードの種類
         /// </summary>
-        public MidiDefs.Mode Mode { get; set; } = MidiDefs.Mode.Major;
+        public MidiDefs.Mode Mode { get; private set; } = MidiDefs.Mode.Major;
         /// <summary>
         /// 調号のPithClass表見
         /// </summary>
-        public PitchClass Signature { get; init; } = new PitchClass(MidiDefs.Step.C, MidiDefs.ALTER_NATURAL);
+        public PitchClass Signature { get; private set; } = new PitchClass(MidiDefs.Step.C, MidiDefs.ALTER_NATURAL);
+        /// <summary>
+        /// コードの種類(MusicXml上の文字列)
+        /// </summary>
+        public string ModeString
+        {
+            get
+            {
+                return MidiDefs.GetEnumDescription(this.Mode);
+            }
+        }
 
         #endregion
 
@@ -106,16 +117,39 @@ namespace Developers.MidiXml.Elements
         }
 
         /// <summary>
-        /// 移調楽器向けの表記を実音表記に転調する
+        /// トランスポーズ
         /// </summary>
-        public void TransposeToConcertKey()
+        /// <param name="Transposition"></param>
+        public void UpdateKey(Transposition Transposition)
         {
-
+            //Transpositionの情報を100%信頼してセット
+            this.Fifths = Transposition.TransposedKey.Fifths;
+            this.Mode = Transposition.TransposedKey.Mode;
+            this.Signature = Transposition.TransposedKey.Signature;
+            //XDocumentの更新
+            UpdateXml();
         }
 
         #endregion
 
         #region "private methods"
+
+        /// <summary>
+        /// インスタンスの値をXDocumentへ反映
+        /// </summary>
+        /// <exception cref="NullReferenceException"></exception>
+        private void UpdateXml()
+        {
+            if (this.Source != null)
+            {
+                this.Source.SetElementValue("fifths", this.Fifths.ToString());
+                this.Source.SetElementValue("mode", this.ModeString);
+            }
+            else
+            {
+                throw new NullReferenceException("Instance has no source XElement.");
+            }
+        }
 
         #endregion
 
@@ -132,7 +166,7 @@ namespace Developers.MidiXml.Elements
             Dump += "<key>";
             Dump += "<fifths>" + Fifths.ToString();
             Dump += "<mode>" + Mode.ToString();
-            Dump += "[KeySignature}" + Signature.Step.ToString() + "(" + Signature.Alter.ToString() + ")";
+            Dump += "[KeySignature]" + Signature.Step.ToString() + "(" + Signature.Alter.ToString() + ")";
             return Dump;
         }
 

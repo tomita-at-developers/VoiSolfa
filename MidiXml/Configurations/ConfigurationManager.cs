@@ -50,10 +50,8 @@ namespace Developers.MidiXml.Configurations
         /// </summary>
         public void Read()
         {
-            string Location = string.Empty;
-            string ConfigPath = string.Empty;
-            Location = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            ConfigPath = Path.Combine(Path.GetDirectoryName(Location)!, "MidiXml.config");
+            string Location = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            string ConfigPath = Path.Combine(Path.GetDirectoryName(Location)!, "MidiXml.config");
             if (File.Exists(ConfigPath))
             {
                 XmlSerializer Serializer = new XmlSerializer(typeof(Models.Configurations));

@@ -15,25 +15,11 @@
         /// <summary>
         /// ステップ(オリジナル)
         /// </summary>
-        public MidiDefs.Step Step { get; init; } = Step;
+        public MidiDefs.Step Step { get; private set; } = Step;
         /// <summary>
         /// 半音操作(オリジナル)
         /// </summary>
-        public int Alter { get; init; } = Alter;
-        /// <summary>
-        /// Stepに対して冗長なAlterを短縮したPitchClass
-        /// </summary>
-        public PitchClass SimplePtichClass
-        {
-            get
-            {
-                MidiDefs.Step TempStep = this.Step;
-                int TempOctave = MidiDefs.OCTAVE_CENTER;
-                int TempAlter = this.Alter;
-                PitchUtil.AdjustToSimplePitch(ref TempStep, ref TempOctave, ref TempAlter);
-                return new PitchClass(TempStep, TempAlter);
-            }
-        }
+        public int Alter { get; private set; } = Alter;
 
         #endregion
 
@@ -62,16 +48,6 @@
         public int GetChromaticIndex(PitchClass Root)
         {
             return PitchUtil.GetChromaticIndex(Root, this);
-        }
-
-        /// <summary>
-        /// AlterをStepに変換して実音を求める
-        /// </summary>
-        /// <param name="Alter"></param>
-        /// <returns></returns>
-        public PitchClass GetAlteredPitchClass(int Alter)
-        {
-            return PitchUtil.GetAlteredPitchClass(this, Alter);
         }
 
         #endregion
