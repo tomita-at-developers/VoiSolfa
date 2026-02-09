@@ -70,8 +70,6 @@ namespace Developers.MidiXml
         {
             //ノードリストの初期化
             this.MidiElms = [];
-            //現在支配的な<attributes>
-            Attributes? CurrentAttr = null;
             //Xmlドキュメントの取得
             this.MusicXDocument = XDocument.Load(ImportPath);
             //<measure>のリストを取得(パートは無視)
@@ -87,9 +85,7 @@ namespace Developers.MidiXml
                         //<key>を含む場合のみ処理する
                         if (ElmMeasureContent.Element("key") != null)
                         {
-                            Attributes Attr = new Attributes(ElmMeasureContent);
-                            CurrentAttr = Attr.Clone();
-                            MidiElms.Add(Attr);
+                            MidiElms.Add(new Attributes(ElmMeasureContent));
                         }
                     }
                     //<harmony>

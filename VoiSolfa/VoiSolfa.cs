@@ -4,15 +4,6 @@ namespace VoiSolfa
 {
     public partial class VoiSolfa : Form
     {
-        private enum TieType
-        {
-            None = 0,
-            Start = 1,
-            Stop = 2,
-            Continue = 3,
-            LetRing = 4
-        }
-
         public VoiSolfa()
         {
             InitializeComponent();
