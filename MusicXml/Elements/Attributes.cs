@@ -1,6 +1,6 @@
 ﻿using System.Xml.Linq;
 
-namespace Developers.MidiXml.Elements
+namespace Developers.MusicXml.Elements
 {
     /// <summary>
     /// 小節の属性
@@ -9,10 +9,21 @@ namespace Developers.MidiXml.Elements
     {
         #region "public properties"
 
+        /// <summary>
+        /// このインスタンスに対応するXElement
+        /// </summary>
         private XElement? Source { get; set; } = null;
-        public string MeasureNumber { get; init; } = string.Empty;
+        /// <summary>
+        /// 親<measure>の番号
+        /// </summary>
+        private string MeasureNumber { get; init; } = string.Empty;
+
+        #endregion
+
+        #region "public properties"
+
         public Key Key { get; init; } = new Key(null, 0, MidiDefs.Mode.Major);
-        public Transpose Transpose { get; private set; } = new Transpose(null, 0, 0);
+        public Transpose Transpose { get; private set; } = new Transpose(null, 0, 0, 0, MidiDefs.YesNo.No);
 
         #endregion
 
@@ -97,7 +108,7 @@ namespace Developers.MidiXml.Elements
         {
             string Dump = string.Empty;
 
-            Dump += "<attributes>(measure=" + this.MeasureNumber + ")";
+            Dump += "<measure id=" + this.MeasureNumber + "><attributes>";
             Dump += this.Key != null ? this.Key.DebugDump() : "";
             Dump += this.Transpose != null ? this.Transpose.DebugDump() : "";
             return Dump;

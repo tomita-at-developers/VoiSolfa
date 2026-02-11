@@ -1,13 +1,22 @@
-﻿using Developers.MidiXml.Configurations.Models;
-using Developers.MidiXml.Elements;
-using System.Diagnostics;
+﻿using Developers.MusicXml.Configurations.Models;
+using Developers.MusicXml.Elements;
+using Microsoft.Extensions.Configuration;
+using Serilog;
 using System.Xml.Linq;
 
-namespace Developers.MidiXml
+namespace Developers.MusicXml
 {
-
-    public class Solfege
+    public class XPart
     {
+        #region "fields"
+
+        //SeriLog(設定ファイルを読み込んでログを設定)
+        private readonly ILogger Log = new LoggerConfiguration()
+            .ReadFrom.Configuration(
+                new ConfigurationBuilder().AddJsonFile("MusicXmlLogSettings.json").Build()
+            ).CreateLogger();
+
+        #endregion
 
         #region "private properties"
 
@@ -35,13 +44,34 @@ namespace Developers.MidiXml
         /// </summary>
         private List<List<string>> SolfaLyrics { get; set; }
         /// <summary>
-        /// MusicXmlのノードリスト
+        /// 親ドキュメント
         /// </summary>
-        private List<MidiElement> MidiElms { get; set; } = [];
+        private XDocument DocScore { get; init; }
         /// <summary>
-        /// MusicXmlのXDocument
+        /// <part-list><score-part>を示すXElement
         /// </summary>
-        private XDocument? MusicXDocument { get; set; } = null;
+        private XElement ElmScorePart { get; init; }
+        /// <summary>
+        /// <part>を示すXElement
+        /// </summary>
+        private XElement ElmPart { get; init; }
+        /// <summary>
+        /// MidiElementのリスト
+        /// </summary>
+        private List<MidiElement> PartElms { get; init; }
+
+        #endregion
+
+        #region "private properties"
+
+        /// <summary>
+        /// <part>のid属性>
+        /// </summary>
+        public string ID { get; init; }
+        /// <summary>
+        /// <part>の<part-name>値
+        /// </summary>
+        public string Name { get; init; }
 
         #endregion
 
@@ -50,30 +80,125 @@ namespace Developers.MidiXml
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        public Solfege()
+        /// <param name="OocScore">親XDocument</param>
+        /// <param name="Source"><part-list><score-part>を示すXElement</param>
+        public XPart(XDocument OocScore, XElement Source)
         {
             //設定ファイルの読み取り
             Configs.Read();
             //デフォルトのソルファ設定をセット
             SolfaLyrics = Configs.DefaultSolfa.ToList();
+            //親ドキュメントの保存
+            this.DocScore = OocScore;
+            //<score-part>のXElement保存
+            this.ElmScorePart = Source;
+            //パートＩＤ取得＆保存
+            this.ID = this.ElmScorePart.Attribute("id")!.Value ?? "";
+            //パート名取得＆保存
+            this.Name = this.ElmScorePart.Element("part-name")?.Value ?? string.Empty;
+            //<part>のXElementの取得＆保存
+            this.ElmPart = Source.Parent!.Parent!.Descendants("part").Where(p => (string)p.Attribute("id")! == this.ID).First();
+            //このパートのロード
+            this.PartElms = Load();
+            //このパートを解析
+            Analyze();
         }
 
         #endregion
 
-        #region "public nethods"
+        #region "public methods"
 
         /// <summary>
-        /// MusicXmlファイルのインポート
+        /// ソルフェージュ歌詞の生成
         /// </summary>
-        /// <param name="ImportPath"></param>
-        public void XmlImport(string ImportPath)
+        public void CreateLyrics(string SolfaSettingName = "")
         {
-            //ノードリストの初期化
-            this.MidiElms = [];
-            //Xmlドキュメントの取得
-            this.MusicXDocument = XDocument.Load(ImportPath);
-            //<measure>のリストを取得(パートは無視)
-            IEnumerable<XElement> ElmMeasures = MusicXDocument.Descendants("measure");
+            //指定された名前のソルファ設定を適用
+            if (Configs.Solfas.Exists(x => x.Name.Equals(SolfaSettingName)))
+            {
+                this.SolfaLyrics = Configs.Solfas.Find(x => x.Name.Equals(SolfaSettingName))!.ToList();
+            }
+            //ソルフェージュループ
+            for (int i = 0; i < PartElms.Count; i++)
+            {
+                //音符の場合は歌詞をセット
+                if (PartElms[i].GetType() == typeof(Note))
+                {
+                    ((Note)PartElms[i]).SetLyrics(this.SolfaLyrics, Configs.Debug);
+                }
+            }
+            //デバック出力
+            DebugTrace("********** CreateLyrics **********");
+        }
+
+        /// <summary>
+        /// 移調楽器向けの表記を実音表記に移調する
+        /// </summary>
+        public void TransposeToConcerKey()
+        {
+            //移調情報
+            Transposition? TransposeInfo = null;
+            //転調ループ
+            for (int i = 0; i < PartElms.Count; i++)
+            {
+                //キーの移調
+                if (PartElms[i].GetType() == typeof(Attributes))
+                {
+                    //移調情報を作成する
+                    Attributes Attr = (Attributes)PartElms[i];
+                    TransposeInfo = new Transposition(Attr);
+                    //移調する
+                    Attr.TransposeToConcertKey(TransposeInfo);
+                }
+                //コードの移調
+                else if (PartElms[i].GetType() == typeof(Harmony))
+                {
+                    if (TransposeInfo != null)
+                    {
+                        ((Harmony)PartElms[i]).Transpose(TransposeInfo);
+                    }
+                }
+                //音符の移調
+                else if (PartElms[i].GetType() == typeof(Note))
+                {
+                    if (TransposeInfo != null)
+                    {
+                        ((Note)PartElms[i]).Transpose(TransposeInfo);
+                    }
+                }
+            }
+            //デバック出力
+            DebugTrace("********** TransposeToConcertKey **********");
+        }
+
+        /// <summary>
+        /// <harmony>を削除する
+        /// </summary>
+        public void RemoveHarmony()
+        {
+            //Harmonyの抽出
+            List<MidiElement> Harmonies = PartElms.FindAll(x => x.GetType().Equals(typeof(Harmony)));
+            //削除ループ
+            foreach (Harmony Harmony in Harmonies)
+            {
+                Harmony.RemoveFromDocument();
+            }
+        }
+
+        #endregion
+
+        #region "private methods"
+
+        /// <summary>
+        /// <part>のロード
+        /// </summary>
+        /// <returns></returns>
+        private List<MidiElement> Load()
+        {
+            //MidiElementリストの初期化
+            List<MidiElement> MidiElms = [];
+            //<measure>のリストを取得
+            IEnumerable<XElement> ElmMeasures = this.ElmPart.Descendants("measure");
             foreach (XElement ElmMeasure in ElmMeasures)
             {
                 //全ノード検索
@@ -100,93 +225,11 @@ namespace Developers.MidiXml
                     }
                 }
             }
-            //アナリーゼを実行
-            Analyze();
-            //デバック出力
-            DebugPrint("********** Import **********");
+            return MidiElms;
         }
 
         /// <summary>
-        /// MusicXmlファイルのエクスポート
-        /// </summary>
-        /// <param name="ExportPath"></param>
-        public void XmlExport(string ExportPath)
-        {
-            //デバック出力
-            DebugPrint("********** Export **********");
-            //XMLファイルの保存
-            MusicXDocument?.Save(ExportPath);
-        }
-
-        /// <summary>
-        /// ソルフェージュ歌詞の生成
-        /// </summary>
-        public void CreateLyrics(string SolfaSettingName = "")
-        {
-            //指定された名前のソルファ設定を適用
-            if (Configs.Solfas.Exists(x => x.Name.Equals(SolfaSettingName)))
-            {
-                this.SolfaLyrics = Configs.Solfas.Find(x => x.Name.Equals(SolfaSettingName))!.ToList();
-            }
-            //ソルフェージュループ
-            for (int i = 0; i < MidiElms.Count; i++)
-            {
-                //音符の場合は歌詞をセット
-                if (MidiElms[i].GetType() == typeof(Note))
-                {
-                    ((Note)MidiElms[i]).SetLyrics(this.SolfaLyrics, Configs.Debug);
-                }
-            }
-            //デバック出力
-            DebugPrint("********** CreateLyrics **********");
-        }
-
-        /// <summary>
-        /// 移調楽器向けの表記を実音表記に移調する
-        /// </summary>
-        public void TransposeToConcerKey()
-        {
-            //移調情報
-            Transposition? TransposeInfo = null;
-            //転調ループ
-            for (int i = 0; i < MidiElms.Count; i++)
-            {
-                //キーの移調
-                if (MidiElms[i].GetType() == typeof(Attributes))
-                {
-                    //移調情報を作成する
-                    Attributes Attr = (Attributes)MidiElms[i];
-                    TransposeInfo = new Transposition(Attr);
-                    //移調する
-                    Attr.TransposeToConcertKey(TransposeInfo);
-                }
-                //コードの移調
-                else if (MidiElms[i].GetType() == typeof(Harmony))
-                {
-                    if (TransposeInfo != null)
-                    {
-                        ((Harmony)MidiElms[i]).Transpose(TransposeInfo);
-                    }
-                }
-                //音符の移調
-                else if (MidiElms[i].GetType() == typeof(Note))
-                {
-                    if (TransposeInfo != null)
-                    {
-                        ((Note)MidiElms[i]).Transpose(TransposeInfo);
-                    }
-                }
-            }
-            //デバック出力
-            DebugPrint("********** TransposeToConcertKey **********");
-        }
-
-        #endregion
-
-        #region "private methods"
-
-        /// <summary>
-        /// MidiElmsの音楽的解析(NoteとHarmony)
+        /// パートの解析
         /// </summary>
         private void Analyze()
         {
@@ -195,13 +238,13 @@ namespace Developers.MidiXml
             //現在のコード(初期値はnull)
             Harmony? CurrentChord = null;
             //解析ループ
-            for (int i = 0; i < MidiElms.Count; i++)
+            for (int i = 0; i < PartElms.Count; i++)
             {
                 //キーの移調
-                if (MidiElms[i].GetType() == typeof(Attributes))
+                if (PartElms[i].GetType() == typeof(Attributes))
                 {
                     //キャスト
-                    Attributes Attr = (Attributes)MidiElms[i];
+                    Attributes Attr = (Attributes)PartElms[i];
                     //キーの保存
                     if (Attr.Key != null)
                     {
@@ -209,20 +252,22 @@ namespace Developers.MidiXml
                     }
                 }
                 //コード
-                else if (MidiElms[i].GetType() == typeof(Harmony))
+                else if (PartElms[i].GetType() == typeof(Harmony))
                 {
                     //アナリーゼのセット
                     AnalyzeChord(CurrentKey, i);
                     //コードの保存
-                    CurrentChord = (Harmony)MidiElms[i];
+                    CurrentChord = (Harmony)PartElms[i];
                 }
                 //音符
-                else if (MidiElms[i].GetType() == typeof(Note))
+                else if (PartElms[i].GetType() == typeof(Note))
                 {
                     //アナリーゼのセット
                     AnalyzeNote(CurrentKey, CurrentChord, i);
                 }
             }
+            //デバック出力
+            DebugTrace("********** Analyze **********");
         }
 
         /// <summary>
@@ -237,7 +282,7 @@ namespace Developers.MidiXml
             const int FLAT = 1;
 
             //Noteの取得            
-            Note Note = (Note)MidiElms[ElementIndex];
+            Note Note = (Note)PartElms[ElementIndex];
             //音符の場合のみ処理
             if (Note.Pitch != null)
             {
@@ -369,7 +414,7 @@ namespace Developers.MidiXml
             const int FLAT = 1;
 
             //Noteの取得            
-            Harmony Harmony = (Harmony)MidiElms[ElementIndex];
+            Harmony Harmony = (Harmony)PartElms[ElementIndex];
             //【前のHarmony】のクロマチックインデックス取得(キー変更があっても無視)
             int PrevCromaticIndex = -1;
             Harmony? PrevHarmony = GetPreviousHarmony(ElementIndex);
@@ -453,14 +498,14 @@ namespace Developers.MidiXml
         {
             Note? NextNote = null;
             //次ノートの検索
-            for (int i = CurrentIndex + 1; i < MidiElms.Count; i++)
+            for (int i = CurrentIndex + 1; i < PartElms.Count; i++)
             {
                 //Noteの場合
-                if (MidiElms[i].GetType() == typeof(Note))
+                if (PartElms[i].GetType() == typeof(Note))
                 {
-                    if (NoteMatches((Note)MidiElms[i], IucludeRest, IncludeTied))
+                    if (NoteMatches((Note)PartElms[i], IucludeRest, IncludeTied))
                     {
-                        NextNote = (Note)MidiElms[i];
+                        NextNote = (Note)PartElms[i];
                         break;
                     }
                 }
@@ -482,11 +527,11 @@ namespace Developers.MidiXml
             for (int i = CurrentIndex - 1; i >= 0; i--)
             {
                 //Noteの場合
-                if (MidiElms[i].GetType() == typeof(Note))
+                if (PartElms[i].GetType() == typeof(Note))
                 {
-                    if (NoteMatches((Note)MidiElms[i], IucludeRest, IncludeTied))
+                    if (NoteMatches((Note)PartElms[i], IucludeRest, IncludeTied))
                     {
-                        NextNote = (Note)MidiElms[i];
+                        NextNote = (Note)PartElms[i];
                         break;
                     }
                 }
@@ -541,13 +586,13 @@ namespace Developers.MidiXml
         private Harmony? GetNextHarmony(int CurrentIndex)
         {
             Harmony? NextHarmony = null;
-            //次ノートの検索
-            for (int i = CurrentIndex + 1; i < MidiElms.Count; i++)
+            //次のコードの検索
+            for (int i = CurrentIndex + 1; i < PartElms.Count; i++)
             {
                 //コードの場合
-                if (MidiElms[i].GetType() == typeof(Harmony))
+                if (PartElms[i].GetType() == typeof(Harmony))
                 {
-                    NextHarmony = (Harmony)MidiElms[i];
+                    NextHarmony = (Harmony)PartElms[i];
                     break;
                 }
             }
@@ -562,13 +607,13 @@ namespace Developers.MidiXml
         private Harmony? GetPreviousHarmony(int CurrentIndex)
         {
             Harmony? PrevHarmony = null;
-            //前ノートの検索
+            //前のコードの検索
             for (int i = CurrentIndex - 1; i >= 0; i--)
             {
                 //コードの場合
-                if (MidiElms[i].GetType() == typeof(Harmony))
+                if (PartElms[i].GetType() == typeof(Harmony))
                 {
-                    PrevHarmony = (Harmony)MidiElms[i];
+                    PrevHarmony = (Harmony)PartElms[i];
                     break;
                 }
             }
@@ -582,16 +627,15 @@ namespace Developers.MidiXml
         /// <summary>
         /// デバック用のダンプ出力
         /// </summary>
-        private void DebugPrint(string Separetor)
+        public void DebugTrace(string Separetor)
         {
             if (!string.IsNullOrEmpty(Separetor))
             {
-                Debug.Print(Separetor);
+                Log.Information(Separetor);
             }
-            //デバック出力
-            foreach (MidiElement node in MidiElms)
+            foreach (MidiElement PartElm in PartElms)
             {
-                Debug.Print(node.DebugDump());
+                Log.Information("[" + this.ID + "]" + PartElm.DebugDump());
             }
         }
 

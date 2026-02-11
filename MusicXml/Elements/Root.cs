@@ -1,6 +1,6 @@
 ﻿using System.Xml.Linq;
 
-namespace Developers.MidiXml.Elements
+namespace Developers.MusicXml.Elements
 {
     /// <summary>
     /// <root>情報(<harmonyで指定されるコードのルート音情報)

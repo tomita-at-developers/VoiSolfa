@@ -1,9 +1,21 @@
-using Developers.MidiXml;
+using Developers.MusicXml;
+using Microsoft.Extensions.Configuration;
+using Serilog;
 
 namespace VoiSolfa
 {
     public partial class VoiSolfa : Form
     {
+        #region "fields"
+
+        //SeriLog(設定ファイルを読み込んでログを設定)
+        private readonly ILogger Log = new LoggerConfiguration()
+            .ReadFrom.Configuration(
+                new ConfigurationBuilder().AddJsonFile("VoiSolfaLogSettings.json").Build()
+            ).CreateLogger();
+
+        #endregion
+
         public VoiSolfa()
         {
             InitializeComponent();
@@ -21,7 +33,7 @@ namespace VoiSolfa
             this.BtnCreateXml.Enabled = false;
             this.BtnDebug.Enabled = true;
             //SolfaSettingコンボボックスの値設定
-            Solfege Solfege = new Solfege();
+            XScore Solfege = new XScore();
             List<string> SettingNames = Solfege.SofaSettingNames;
             this.CmbSolfaSetting.Items.Add("");
             foreach (string SettingName in SettingNames)
@@ -93,35 +105,78 @@ namespace VoiSolfa
                 //ファイルが指定されていれば処理する
                 if (this.TxtXmlPath.Text.Length > 0 && File.Exists(this.TxtXmlPath.Text))
                 {
-                    //出力ファイル名
-                    string OutputFileName = string.Empty;
-                    //「ファイル保存」ダイアログの表示
-                    this.DlgSaveFile.InitialDirectory = Path.GetDirectoryName(this.TxtXmlPath.Text);
-                    this.DlgSaveFile.FileName = Path.GetFileNameWithoutExtension(this.TxtXmlPath.Text) + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xml";
-                    this.DlgSaveFile.Filter = "MusixXmlファイル(*.xml;*.musicxml)|*.xml;*.musicxml|すべてのファイル(*.*)|*.*";
-                    this.DlgSaveFile.FilterIndex = 1;
-                    this.DlgSaveFile.OverwritePrompt = true;
-                    DialogResult DlgResult = this.DlgSaveFile.ShowDialog();
-                    //ＯＫクリックのとき
-                    if (DlgResult == DialogResult.OK)
+                    //Solgaの生成
+                    XScore Score = new XScore();
+                    //指定ファイルのインポート
+                    Score.Load(this.TxtXmlPath.Text);
+                    if (Score.ScoreParts.Count > 0)
                     {
-                        //出力ファイル名保存
-                        OutputFileName = this.DlgSaveFile.FileName;
-                        //Solgaの生成
-                        Solfege Solfege = new Solfege();
-                        //MusicXmlファイルのインポート
-                        Solfege.XmlImport(this.TxtXmlPath.Text);
-                        //ソルファ歌詞の生成
-                        Solfege.CreateLyrics(this.CmbSolfaSetting.SelectedItem.ToString());
-                        //コンサートキーに転調する場合
-                        if (this.CbxTransposeToConcertKey.Checked)
+                        //対象パートのセット(初期値は１つめ)
+                        string TargPartID = Score.ScoreParts.First().Key;
+                        //パートが複数ある場合はユーザ選択
+                        if (Score.ScoreParts.Count > 1)
                         {
-                            Solfege.TransposeToConcerKey();
+                            //パート選択ダイアログ表示
+                            SelectPart Selector = new SelectPart();
+                            Selector.Parts = Score.ScoreParts;
+                            Selector.ShowDialog();
+                            //選択結果のセット
+                            TargPartID = Selector.SelectedPartName;
                         }
-                        //MusicXmlファイルの生成
-                        Solfege.XmlExport(OutputFileName);
-                        //完了メッセージ
-                        MessageBox.Show("Music Xml file is saved." + Environment.NewLine + OutputFileName);
+                        //対象パートが指定された場合
+                        if (TargPartID.Length > 0)
+                        {
+                            //対象パート取得
+                            XPart Part = Score.XPart(TargPartID);
+                            //出力ファイル名
+                            string OutputFileName = string.Empty;
+                            //「ファイル保存」ダイアログの表示
+                            this.DlgSaveFile.InitialDirectory = Path.GetDirectoryName(this.TxtXmlPath.Text);
+                            this.DlgSaveFile.FileName = Path.GetFileNameWithoutExtension(this.TxtXmlPath.Text) + "_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ".xml";
+                            this.DlgSaveFile.Filter = "MusixXmlファイル(*.xml;*.musicxml)|*.xml;*.musicxml|すべてのファイル(*.*)|*.*";
+                            this.DlgSaveFile.FilterIndex = 1;
+                            this.DlgSaveFile.OverwritePrompt = true;
+                            DialogResult DlgResult = this.DlgSaveFile.ShowDialog();
+                            //ＯＫクリックのとき
+                            if (DlgResult == DialogResult.OK)
+                            {
+                                //処理パラメータのログ
+                                Log.Information(
+                                    "Solfa=\"" + this.CmbSolfaSetting.SelectedItem.ToString() + "\"" +
+                                    " TransposeToConcertKey=" + this.CbxTransposeToConcertKey.Checked.ToString() +
+                                    " CbxRemoveHarmony=" + this.CbxRemoveHarmony.Checked.ToString());
+                                //出力ファイル名保存
+                                OutputFileName = this.DlgSaveFile.FileName;
+                                //ソルファ歌詞の生成
+                                Part.CreateLyrics(this.CmbSolfaSetting.SelectedItem.ToString());
+                                //コンサートキーに転調する場合
+                                if (this.CbxTransposeToConcertKey.Checked)
+                                {
+                                    Part.TransposeToConcerKey();
+                                }
+                                //コードを削除する場合
+                                if (this.CbxRemoveHarmony.Checked)
+                                {
+                                    Part.RemoveHarmony();
+                                }
+                                //MusicXmlファイルの生成
+                                Score.XmlExport(OutputFileName);
+                                //完了メッセージ
+                                MessageBox.Show("Music Xml file is saved." + Environment.NewLine + OutputFileName);
+                            }
+                            else
+                            {
+                                //MessageBox.Show("Canceled.");
+                            }
+                        }
+                        else
+                        {
+                            //MessageBox.Show("Canceled.");
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("The specified file has no score part." + Environment.NewLine + this.TxtXmlPath.Text);
                     }
                 }
                 else

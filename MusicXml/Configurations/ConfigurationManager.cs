@@ -1,9 +1,9 @@
-﻿using Developers.MidiXml.Configurations.Models;
+﻿using Developers.MusicXml.Configurations.Models;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace Developers.MidiXml.Configurations
+namespace Developers.MusicXml.Configurations
 {
     public class ConfigurationManager
     {

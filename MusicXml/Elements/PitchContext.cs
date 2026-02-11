@@ -1,4 +1,4 @@
-﻿namespace Developers.MidiXml.Elements
+﻿namespace Developers.MusicXml.Elements
 {
     /// <summary>
     /// 音の位置づけ情報

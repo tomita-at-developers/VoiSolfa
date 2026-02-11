@@ -1,6 +1,6 @@
 ﻿using System.Xml.Linq;
 
-namespace Developers.MidiXml.Elements
+namespace Developers.MusicXml.Elements
 {
     /// <summary>
     /// <lyric>情報(歌詞情報)

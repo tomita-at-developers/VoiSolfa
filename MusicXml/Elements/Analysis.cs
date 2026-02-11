@@ -1,4 +1,4 @@
-﻿namespace Developers.MidiXml.Elements
+﻿namespace Developers.MusicXml.Elements
 {
     /// <summary>
     /// 音程の分析情報

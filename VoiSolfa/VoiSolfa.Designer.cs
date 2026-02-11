@@ -38,10 +38,12 @@
             LblSolfaSetting = new Label();
             CmbSolfaSetting = new ComboBox();
             CbxTransposeToConcertKey = new CheckBox();
+            CbxRemoveHarmony = new CheckBox();
             SuspendLayout();
             // 
             // TxtXmlPath
             // 
+            TxtXmlPath.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             TxtXmlPath.Location = new Point(115, 18);
             TxtXmlPath.Margin = new Padding(4);
             TxtXmlPath.Name = "TxtXmlPath";
@@ -51,6 +53,7 @@
             // 
             // BtnRefer
             // 
+            BtnRefer.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             BtnRefer.Location = new Point(745, 18);
             BtnRefer.Margin = new Padding(4);
             BtnRefer.Name = "BtnRefer";
@@ -62,11 +65,12 @@
             // 
             // BtnCreateXml
             // 
-            BtnCreateXml.Location = new Point(334, 96);
+            BtnCreateXml.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            BtnCreateXml.Location = new Point(314, 142);
             BtnCreateXml.Margin = new Padding(4);
             BtnCreateXml.Name = "BtnCreateXml";
             BtnCreateXml.Size = new Size(174, 35);
-            BtnCreateXml.TabIndex = 6;
+            BtnCreateXml.TabIndex = 7;
             BtnCreateXml.Text = "Create Solfage Xml";
             BtnCreateXml.UseVisualStyleBackColor = true;
             BtnCreateXml.Click += BtnCreateXml_Click;
@@ -87,11 +91,12 @@
             // 
             // BtnDebug
             // 
+            BtnDebug.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             BtnDebug.Enabled = false;
-            BtnDebug.Location = new Point(685, 99);
+            BtnDebug.Location = new Point(696, 148);
             BtnDebug.Name = "BtnDebug";
             BtnDebug.Size = new Size(94, 29);
-            BtnDebug.TabIndex = 7;
+            BtnDebug.TabIndex = 8;
             BtnDebug.Text = "Debug";
             BtnDebug.UseVisualStyleBackColor = true;
             BtnDebug.Click += BtnDebug_Click;
@@ -107,6 +112,7 @@
             // 
             // CmbSolfaSetting
             // 
+            CmbSolfaSetting.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             CmbSolfaSetting.DropDownStyle = ComboBoxStyle.DropDownList;
             CmbSolfaSetting.FormattingEnabled = true;
             CmbSolfaSetting.Location = new Point(115, 58);
@@ -126,11 +132,24 @@
             CbxTransposeToConcertKey.Text = "Transpose to Concert Key";
             CbxTransposeToConcertKey.UseVisualStyleBackColor = true;
             // 
+            // CbxRemoveHarmony
+            // 
+            CbxRemoveHarmony.AutoSize = true;
+            CbxRemoveHarmony.Checked = true;
+            CbxRemoveHarmony.CheckState = CheckState.Checked;
+            CbxRemoveHarmony.Location = new Point(348, 99);
+            CbxRemoveHarmony.Name = "CbxRemoveHarmony";
+            CbxRemoveHarmony.Size = new Size(214, 24);
+            CbxRemoveHarmony.TabIndex = 6;
+            CbxRemoveHarmony.Text = "Remove Harmony Elements";
+            CbxRemoveHarmony.UseVisualStyleBackColor = true;
+            // 
             // VoiSolfa
             // 
             AutoScaleDimensions = new SizeF(120F, 120F);
             AutoScaleMode = AutoScaleMode.Dpi;
-            ClientSize = new Size(802, 142);
+            ClientSize = new Size(802, 190);
+            Controls.Add(CbxRemoveHarmony);
             Controls.Add(CbxTransposeToConcertKey);
             Controls.Add(CmbSolfaSetting);
             Controls.Add(LblSolfaSetting);
@@ -159,5 +178,6 @@
         private Label LblSolfaSetting;
         private ComboBox CmbSolfaSetting;
         private CheckBox CbxTransposeToConcertKey;
+        private CheckBox CbxRemoveHarmony;
     }
 }

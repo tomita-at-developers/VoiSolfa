@@ -1,7 +1,7 @@
 ﻿using System.Xml.Linq;
-using static Developers.MidiXml.Elements.MidiDefs;
+using static Developers.MusicXml.Elements.MidiDefs;
 
-namespace Developers.MidiXml.Elements
+namespace Developers.MusicXml.Elements
 {
     /// <summary>
     /// <key>情報(キー情報)

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
 
-namespace Developers.MidiXml.Elements
+namespace Developers.MusicXml.Elements
 {
     /// <summary>
     /// MusicXmlに関する各種定義
@@ -176,6 +176,11 @@ namespace Developers.MidiXml.Elements
              new KeyValuePair<int, KeyValuePair<Step, int>>(-7, new KeyValuePair<Step, int>(Step.C, -1)),
         ];
 
+        public static readonly List<KeyValuePair<string, YesNo>> DoubleMembers =
+        [
+            new KeyValuePair<string, YesNo>(GetEnumDescription(YesNo.Yes),  YesNo.Yes),
+            new KeyValuePair<string, YesNo>(GetEnumDescription(YesNo.No),   YesNo.No ),
+        ];
 
         public enum Mode
         {
@@ -456,6 +461,15 @@ namespace Developers.MidiXml.Elements
             Alter = 2,
             [Description("subtract")]
             Subtract = 3,
+        }
+
+        public enum YesNo
+        {
+            EnumDefault = 0,
+            [Description("yes")]
+            Yes = 1,
+            [Description("no")]
+            No = 2,
         }
 
         /// <summary>

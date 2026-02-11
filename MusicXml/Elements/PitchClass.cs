@@ -1,4 +1,4 @@
-﻿namespace Developers.MidiXml.Elements
+﻿namespace Developers.MusicXml.Elements
 {
     /// <summary>
     /// ピッチクラス情報(オクターブを意識しない音名)

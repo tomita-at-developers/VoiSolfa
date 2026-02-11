@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace Developers.MidiXml.Configurations.Models
+namespace Developers.MusicXml.Configurations.Models
 {
     [XmlRoot("configurations")]
     public class Configurations

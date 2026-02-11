@@ -1,6 +1,6 @@
 ﻿using System.Xml.Linq;
 
-namespace Developers.MidiXml.Elements
+namespace Developers.MusicXml.Elements
 {
     /// <summary>
     /// <note>情報
@@ -27,8 +27,16 @@ namespace Developers.MidiXml.Elements
         /// <summary>
         /// このインスタンスに対応するXElement
         /// </summary>
-        public XElement Source { get; init; }
-        public string MeasureNumber { get; init; } = string.Empty;
+        private XElement Source { get; init; }
+        /// <summary>
+        /// 親<measure>の番号
+        /// </summary>
+        private string MeasureNumber { get; init; } = string.Empty;
+
+        #endregion
+
+        #region "public properties"
+
         public Pitch? Pitch { get; set; } = null;
         public bool Rest { get; init; } = false;
         public int? Duration { get; init; } = null;
@@ -334,7 +342,7 @@ namespace Developers.MidiXml.Elements
         {
             string Dump = string.Empty;
 
-            Dump += "<note>(measure=" + this.MeasureNumber + ")";
+            Dump += "<measure id=" + this.MeasureNumber + "><note>";
             Dump += Pitch != null ? Pitch.DebugDump() : "";
             Dump += Rest ? "<rest/>" : "";
             Dump += Duration != null ? "<duration>" + Duration.ToString() : "";

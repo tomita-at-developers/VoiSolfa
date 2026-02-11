@@ -1,17 +1,31 @@
 ﻿using System.Xml.Linq;
 
-namespace Developers.MidiXml.Elements
+namespace Developers.MusicXml.Elements
 {
     /// <summary>
     /// <harmony>情報(コード情報)
     /// </summary>
     public class Harmony : MidiElement
     {
-        #region "public properties"
+        #region "private properties"
 
+        /// <summary>
         /// このインスタンスに対応するXElement
         /// </summary>
-        public XElement Source { get; init; }
+        private XElement Source { get; init; }
+        /// <summary>
+        /// 親<measure>の番号
+        /// </summary>
+        private string MeasureNumber { get; init; } = string.Empty;
+        /// <summary>
+        /// XDocumentから削除されたことを示すフラグ
+        /// </summary>
+        private bool Removed { get; set; } = false;
+
+        #endregion
+
+        #region "public properties"
+
         public Root Root { get; init; } = new Root(MidiDefs.Step.C, MidiDefs.ALTER_NATURAL);
         public MidiDefs.Kind Kind { get; init; } = MidiDefs.Kind.None;
         public List<Degree> Degrees { get; init; } = [];
@@ -35,12 +49,20 @@ namespace Developers.MidiXml.Elements
         public Harmony(XElement Source)
         {
             //ソース読み取り
+            XAttribute? AtrMeasureNumber = Source.Parent!.Attribute("number");
             XElement? ElmRoot = Source.Element("root");
             XElement? ElmKind = Source.Element("kind");
             IEnumerable<XElement> ElmDegrees = Source.Elements("degree");
 
             //ノード保存
             this.Source = Source;
+            //削除済フラグ(初期値は未削除)
+            this.Removed = false;
+            //親ノードのnumber属性(小節番号)を取得
+            if (AtrMeasureNumber != null)
+            {
+                this.MeasureNumber = AtrMeasureNumber.Value ?? string.Empty;
+            }
             //<root>
             if (ElmRoot != null)
             {
@@ -85,6 +107,15 @@ namespace Developers.MidiXml.Elements
             UpdateXmlRoot();
         }
 
+        /// <summary>
+        /// XDocumentから削除する
+        /// </summary>
+        public void RemoveFromDocument()
+        {
+            RemoveXmlharmony();
+            this.Removed = true;
+        }
+
         #endregion
 
         #region "private methods"
@@ -104,6 +135,15 @@ namespace Developers.MidiXml.Elements
             }
         }
 
+        /// <summary>
+        /// <harmony>の削除
+        /// </summary>
+        private void RemoveXmlharmony()
+        {
+            //XElementを削除
+            Source.Remove();
+        }
+
         #endregion
 
         #region "debug methods"
@@ -116,7 +156,8 @@ namespace Developers.MidiXml.Elements
         {
             string Dump = string.Empty;
 
-            Dump += "<harmony>";
+            Dump += "<measure id=" + this.MeasureNumber + "><harmony>";
+            Dump += "[Removed=" + this.Removed.ToString() + "]";
             Dump += Root.DebugDump();
             Dump += "<kind>" + this.Kind.ToString();
             foreach (Degree degree in Degrees)

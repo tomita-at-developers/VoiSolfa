@@ -1,4 +1,4 @@
-﻿namespace Developers.MidiXml.Elements
+﻿namespace Developers.MusicXml.Elements
 {
     /// <summary>
     /// 移調情報クラス
@@ -103,7 +103,7 @@
             this.OriginalTranspose = Attributes.Transpose.Clone();
             //移調後の情報を生成
             this.TransposedKey = GenerateTransposedKey(this.OriginalKey);
-            this.TransposedTranspose = new Transpose(null, 0, 0);
+            this.TransposedTranspose = new Transpose(null, 0, 0, 0, MidiDefs.YesNo.No);
             //移調後のスケールを生成
             this.ChromaticScale = PitchUtil.CreateChromaticScale(TransposedKey.Signature);
         }

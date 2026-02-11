@@ -1,6 +1,6 @@
 ﻿using System.Xml.Linq;
 
-namespace Developers.MidiXml.Elements
+namespace Developers.MusicXml.Elements
 {
     /// <summary>
     /// <transpose>情報
@@ -21,6 +21,14 @@ namespace Developers.MidiXml.Elements
         /// 転調のクロマチック表現
         /// </summary>
         public int Chromatic { get; private set; } = 0;
+        /// <summary>
+        /// オクターブ移調
+        /// </summary>
+        public int? OctaveChange { get; private set; } = null;
+        /// <summary>
+        /// オクターブ上
+        /// </summary>
+        public MidiDefs.YesNo? Double { get; private set; } = null;
 
         #endregion
 
@@ -32,11 +40,15 @@ namespace Developers.MidiXml.Elements
         /// <param name="Source"></param>
         /// <param name="Diatonic"></param>
         /// <param name="Chromatic"></param>
-        public Transpose(XElement? Source, int? Diatonic, int Chromatic)
+        /// <param name="OctaveChange"></param>
+        /// <param name="Double"></param>
+        public Transpose(XElement? Source, int? Diatonic, int Chromatic, int? OctaveChange, MidiDefs.YesNo? Double)
         {
             this.Source = Source;
             this.Diatonic = Diatonic;
             this.Chromatic = Chromatic;
+            this.OctaveChange = OctaveChange;
+            this.Double = Double;
         }
 
         /// <summary>
@@ -50,6 +62,8 @@ namespace Developers.MidiXml.Elements
             //ソース読み取り
             XElement? ElmDiatonic = SourceElm.Element("diatonic");
             XElement? ElmChromatic = SourceElm.Element("chromatic");
+            XElement? ElmOctaveChange = SourceElm.Element("octave-change");
+            XElement? ElmDouble = SourceElm.Element("double");
 
             //ノード保存
             this.Source = SourceElm;
@@ -71,6 +85,27 @@ namespace Developers.MidiXml.Elements
                 }
                 this.Chromatic = RawTansChromaticInt;
             }
+            //<transpose><octave-change>
+            if (ElmOctaveChange != null)
+            {
+                if (!int.TryParse(ElmOctaveChange.Value, out int RawOctaveChangeInt))
+                {
+                    throw new ArgumentException("<attributes><transpose>: <octave-change>: Invalid value.");
+                }
+                this.OctaveChange = RawOctaveChangeInt;
+            }
+            //<transpose><octave-change>
+            if (ElmDouble != null)
+            {
+                string RawDouble = ElmDouble.Value ?? "";
+                //値の正当性チェック
+                if (!MidiDefs.DoubleMembers.Exists(x => x.Key.Equals(RawDouble, StringComparison.OrdinalIgnoreCase)))
+                {
+                    throw new ArgumentException("<attributes><transpose>: <double>: Invalid or unsupported value.");
+                }
+                //値のセット
+                this.Double = MidiDefs.DoubleMembers.FirstOrDefault(x => x.Key.Equals(RawDouble, StringComparison.OrdinalIgnoreCase)).Value;
+            }
         }
 
         #endregion
@@ -83,7 +118,7 @@ namespace Developers.MidiXml.Elements
         /// <returns></returns>
         public Transpose Clone()
         {
-            return new Transpose(this.Source, this.Diatonic, this.Chromatic);
+            return new Transpose(this.Source, this.Diatonic, this.Chromatic, this.OctaveChange, this.Double);
         }
 
         /// <summary>
@@ -133,8 +168,10 @@ namespace Developers.MidiXml.Elements
             string Dump = string.Empty;
 
             Dump += "<transpose>";
-            Dump += "<diatonic>" + Diatonic.ToString();
-            Dump += "<chromatic>" + Chromatic.ToString();
+            Dump += "<diatonic>" + this.Diatonic.ToString();
+            Dump += "<chromatic>" + this.Chromatic.ToString();
+            Dump += "<octave-change>" + this.OctaveChange.ToString();
+            Dump += "<double>" + this.Double.ToString();
             return Dump;
         }
 
