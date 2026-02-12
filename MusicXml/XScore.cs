@@ -1,4 +1,5 @@
-﻿using Developers.MusicXml.Configurations.Models;
+﻿using Developers.MusicXml.Configurations;
+using Developers.MusicXml.Configurations.Models;
 using Developers.MusicXml.Elements;
 using Microsoft.Extensions.Configuration;
 using Serilog;
@@ -6,25 +7,15 @@ using System.Xml.Linq;
 
 namespace Developers.MusicXml
 {
-
     public class XScore
     {
-        #region "fields"
-
-        //SeriLog(設定ファイルを読み込んでログを設定)
-        private readonly ILogger Log = new LoggerConfiguration()
-            .ReadFrom.Configuration(
-                new ConfigurationBuilder().AddJsonFile("MusicXmlLogSettings.json").Build()
-            ).CreateLogger();
-
-        #endregion
 
         #region "private properties"
 
         /// <summary>
-        /// 設定ファイルマネージャ
+        /// 設定情報
         /// </summary>
-        private Configurations.ConfigurationManager Configs { get; set; } = new Configurations.ConfigurationManager();
+        private MusicConfigurations Configs { get; init; } = ConfigurationLoader.Load();
         /// <summary>
         /// Solfa設定名リスト
         /// </summary>
@@ -90,8 +81,6 @@ namespace Developers.MusicXml
         /// </summary>
         public XScore()
         {
-            //自ライブラリの設定ファイル(ソルファ歌詞)を読み取む
-            Configs.Read();
             //デフォルトのソルファ設定をセット
             SolfaLyrics = Configs.DefaultSolfa.ToList();
         }

@@ -1,4 +1,5 @@
-﻿using Developers.MusicXml.Configurations.Models;
+﻿using Developers.MusicXml.Configurations;
+using Developers.MusicXml.Configurations.Models;
 using Developers.MusicXml.Elements;
 using Microsoft.Extensions.Configuration;
 using Serilog;
@@ -8,22 +9,16 @@ namespace Developers.MusicXml
 {
     public class XPart
     {
-        #region "fields"
-
-        //SeriLog(設定ファイルを読み込んでログを設定)
-        private readonly ILogger Log = new LoggerConfiguration()
-            .ReadFrom.Configuration(
-                new ConfigurationBuilder().AddJsonFile("MusicXmlLogSettings.json").Build()
-            ).CreateLogger();
+        #region "private fields"
 
         #endregion
 
         #region "private properties"
 
         /// <summary>
-        /// 設定ファイルマネージャ
+        /// 設定情報
         /// </summary>
-        private Configurations.ConfigurationManager Configs { get; set; } = new Configurations.ConfigurationManager();
+        private MusicConfigurations Configs { get; init; } = ConfigurationLoader.Load();
         /// <summary>
         /// Solfa設定名リスト
         /// </summary>
@@ -48,7 +43,7 @@ namespace Developers.MusicXml
         /// </summary>
         private XDocument DocScore { get; init; }
         /// <summary>
-        /// <part-list><score-part>を示すXElement
+        /// <part-list>を示すXElement
         /// </summary>
         private XElement ElmScorePart { get; init; }
         /// <summary>
@@ -84,8 +79,6 @@ namespace Developers.MusicXml
         /// <param name="Source"><part-list><score-part>を示すXElement</param>
         public XPart(XDocument OocScore, XElement Source)
         {
-            //設定ファイルの読み取り
-            Configs.Read();
             //デフォルトのソルファ設定をセット
             SolfaLyrics = Configs.DefaultSolfa.ToList();
             //親ドキュメントの保存
@@ -179,9 +172,9 @@ namespace Developers.MusicXml
             //Harmonyの抽出
             List<MidiElement> Harmonies = PartElms.FindAll(x => x.GetType().Equals(typeof(Harmony)));
             //削除ループ
-            foreach (Harmony Harmony in Harmonies)
+            foreach (MidiElement Harmony in Harmonies)
             {
-                Harmony.RemoveFromDocument();
+                ((Harmony)Harmony).RemoveFromDocument();
             }
         }
 
@@ -631,11 +624,11 @@ namespace Developers.MusicXml
         {
             if (!string.IsNullOrEmpty(Separetor))
             {
-                Log.Information(Separetor);
+                Logger.Writer.Information(Separetor);
             }
             foreach (MidiElement PartElm in PartElms)
             {
-                Log.Information("[" + this.ID + "]" + PartElm.DebugDump());
+                Logger.Writer.Information("[" + this.ID + "]" + PartElm.DebugDump());
             }
         }
 

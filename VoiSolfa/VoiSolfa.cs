@@ -6,20 +6,23 @@ namespace VoiSolfa
 {
     public partial class VoiSolfa : Form
     {
-        #region "fields"
-
-        //SeriLog(設定ファイルを読み込んでログを設定)
-        private readonly ILogger Log = new LoggerConfiguration()
-            .ReadFrom.Configuration(
-                new ConfigurationBuilder().AddJsonFile("VoiSolfaLogSettings.json").Build()
-            ).CreateLogger();
+        #region "private fields"
 
         #endregion
 
+        #region "constructors"
+
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
         public VoiSolfa()
         {
             InitializeComponent();
         }
+
+        #endregion
+
+        #region "event handlers"
 
         /// <summary>
         /// フォームロード時の処理
@@ -28,19 +31,27 @@ namespace VoiSolfa
         /// <param name="e"></param>
         private void Main_Load(object sender, EventArgs e)
         {
-            //コントロールの初期化
-            this.TxtXmlPath.Text = string.Empty;
-            this.BtnCreateXml.Enabled = false;
-            this.BtnDebug.Enabled = true;
-            //SolfaSettingコンボボックスの値設定
-            XScore Solfege = new XScore();
-            List<string> SettingNames = Solfege.SofaSettingNames;
-            this.CmbSolfaSetting.Items.Add("");
-            foreach (string SettingName in SettingNames)
+            try
             {
-                this.CmbSolfaSetting.Items.Add(SettingName);
+                //コントロールの初期化
+                this.TxtXmlPath.Text = string.Empty;
+                this.BtnCreateXml.Enabled = false;
+                this.BtnDebug.Enabled = true;
+                //SolfaSettingコンボボックスの値設定
+                XScore Solfege = new XScore();
+                List<string> SettingNames = Solfege.SofaSettingNames;
+                this.CmbSolfaSetting.Items.Add("");
+                foreach (string SettingName in SettingNames)
+                {
+                    this.CmbSolfaSetting.Items.Add(SettingName);
+                }
+                this.CmbSolfaSetting.SelectedIndex = 0;
             }
-            this.CmbSolfaSetting.SelectedIndex = 0;
+            catch (Exception ex)
+            {
+                Logger.Writer.Error(ex, "[Main_Load] caught the exception.");
+                MessageBox.Show("[Main_Load]" + Environment.NewLine + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         /// <summary>
@@ -66,7 +77,8 @@ namespace VoiSolfa
             }
             catch (Exception ex)
             {
-                MessageBox.Show("[BtnRefer]" + Environment.NewLine + ex.Message);
+                Logger.Writer.Error(ex, "[BtnRefer_Click] caught the exception.");
+                MessageBox.Show("[BtnRefer_Click]" + Environment.NewLine + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -77,14 +89,22 @@ namespace VoiSolfa
         /// <param name="e"></param>
         private void TxtXmlPath_TextChanged(object sender, EventArgs e)
         {
-            //指定されたファイルパスが存在すればXML生成ボタンを有効にする
-            if (this.TxtXmlPath.Text.Length > 0 && File.Exists(this.TxtXmlPath.Text))
+            try
             {
-                this.BtnCreateXml.Enabled = true;
+                //指定されたファイルパスが存在すればXML生成ボタンを有効にする
+                if (this.TxtXmlPath.Text.Length > 0 && File.Exists(this.TxtXmlPath.Text))
+                {
+                    this.BtnCreateXml.Enabled = true;
+                }
+                else
+                {
+                    this.BtnCreateXml.Enabled = false;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                this.BtnCreateXml.Enabled = false;
+                Logger.Writer.Error(ex, "[TxtXmlPath_TextChanged] caught the exception.");
+                MessageBox.Show("[TxtXmlPath_TextChanged]" + Environment.NewLine + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -101,6 +121,8 @@ namespace VoiSolfa
                 this.TxtXmlPath.Enabled = false;
                 this.BtnRefer.Enabled = false;
                 this.CmbSolfaSetting.Enabled = false;
+                this.CbxTransposeToConcertKey.Enabled = false;
+                this.CbxRemoveHarmony.Enabled = false;
                 this.BtnCreateXml.Enabled = false;
                 //ファイルが指定されていれば処理する
                 if (this.TxtXmlPath.Text.Length > 0 && File.Exists(this.TxtXmlPath.Text))
@@ -141,7 +163,7 @@ namespace VoiSolfa
                             if (DlgResult == DialogResult.OK)
                             {
                                 //処理パラメータのログ
-                                Log.Information(
+                                Logger.Writer.Information(
                                     "Solfa=\"" + this.CmbSolfaSetting.SelectedItem.ToString() + "\"" +
                                     " TransposeToConcertKey=" + this.CbxTransposeToConcertKey.Checked.ToString() +
                                     " CbxRemoveHarmony=" + this.CbxRemoveHarmony.Checked.ToString());
@@ -164,14 +186,6 @@ namespace VoiSolfa
                                 //完了メッセージ
                                 MessageBox.Show("Music Xml file is saved." + Environment.NewLine + OutputFileName);
                             }
-                            else
-                            {
-                                //MessageBox.Show("Canceled.");
-                            }
-                        }
-                        else
-                        {
-                            //MessageBox.Show("Canceled.");
                         }
                     }
                     else
@@ -187,7 +201,8 @@ namespace VoiSolfa
             }
             catch (Exception ex)
             {
-                MessageBox.Show("[BtnCreateXml]" + Environment.NewLine + ex.Message);
+                Logger.Writer.Error(ex, "[BtnCreateXml_Click] caught the exception.");
+                MessageBox.Show("[BtnCreateXml_Click]" + Environment.NewLine + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
@@ -195,6 +210,8 @@ namespace VoiSolfa
                 this.TxtXmlPath.Enabled = true;
                 this.BtnRefer.Enabled = true;
                 this.CmbSolfaSetting.Enabled = true;
+                this.CbxTransposeToConcertKey.Enabled = true;
+                this.CbxRemoveHarmony.Enabled = true;
                 this.BtnCreateXml.Enabled = true;
             }
         }
@@ -213,6 +230,10 @@ namespace VoiSolfa
             //DebugCreateScale();
             //DebugPitchToNumber();
         }
+
+        #endregion
+
+        #region "debug methods"
 
         //private void DebugPitchClassTester()
         //{
@@ -329,12 +350,13 @@ namespace VoiSolfa
         //    }
         //}
 
-
         //private void DebugCreateScale()
         //{
         //    PitchClass Bb = new PitchClass(MidiDefs.Step.B, -1);
         //    List<List<PitchClass>> Scale = PitchUtil.CreateChromaticScale(Bb);
         //    Debug.Print("");
         //}
+
+        #endregion
     }
 }
